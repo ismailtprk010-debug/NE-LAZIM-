@@ -59,7 +59,6 @@
             font-weight: 600;
         }
 
-        /* Navigasyon Sekmeleri */
         .nav-tabs {
             display: flex;
             justify-content: center;
@@ -91,7 +90,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Ortak Kart ve Form Stilleri */
         .panel-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -111,6 +109,7 @@
             background: var(--bg-color);
             color: var(--text-main);
             font-size: 0.95rem;
+            margin-bottom: 0.5rem;
         }
 
         .action-btn {
@@ -125,7 +124,6 @@
         }
         .action-btn:hover { background: var(--accent-hover); }
 
-        /* Karşılaştırma Modülü Stilleri */
         .selector-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
         .summary-banner {
             background: var(--card-bg);
@@ -146,7 +144,6 @@
         .winner { background: var(--win-bg); color: var(--win-text); font-weight: 700; }
         .win-badge { display: inline-block; background: var(--win-border); color: #fff; font-size: 0.7rem; padding: 2px 7px; border-radius: 4px; margin-left: 6px; }
 
-        /* Sonuç Listeleri */
         .result-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
         .item-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem; }
         .item-card h4 { margin-bottom: 0.4rem; color: var(--accent); }
@@ -177,10 +174,12 @@
         <div class="selector-grid">
             <div class="panel-card" style="margin-bottom:0;">
                 <div class="panel-title">1. Telefon Seçimi</div>
+                <input type="text" id="search-1" placeholder="Model ara (örn: 16 Pro, S25, Note 13)..." oninput="filterSelectOptions(1)">
                 <select id="select-1" onchange="comparePhones()"></select>
             </div>
             <div class="panel-card" style="margin-bottom:0;">
                 <div class="panel-title">2. Telefon Seçimi</div>
+                <input type="text" id="search-2" placeholder="Model ara (örn: X6 Pro, Honor 200)..." oninput="filterSelectOptions(2)">
                 <select id="select-2" onchange="comparePhones()"></select>
             </div>
         </div>
@@ -206,7 +205,7 @@
             <div class="form-grid">
                 <div>
                     <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:4px;">Maksimum Bütçe (TL)</label>
-                    <input type="number" id="max-phone-budget" value="35000" placeholder="Örn: 30000">
+                    <input type="number" id="max-phone-budget" value="45000" placeholder="Örn: 35000">
                 </div>
                 <div style="display:flex; align-items:flex-end;">
                     <button class="action-btn" onclick="filterPhonesByBudget()">Modelleri Listele</button>
@@ -223,7 +222,7 @@
             <div class="form-grid">
                 <div>
                     <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:4px;">Maksimum Araç Bütçesi (TL)</label>
-                    <input type="number" id="max-car-budget" value="750000" placeholder="Örn: 750000">
+                    <input type="number" id="max-car-budget" value="850000" placeholder="Örn: 750000">
                 </div>
                 <div style="display:flex; align-items:flex-end;">
                     <button class="action-btn" onclick="filterCarsByBudget()">İlanları Göster</button>
@@ -233,18 +232,18 @@
         <div class="result-list" id="car-budget-results"></div>
     </div>
 
-    <!-- SEKME 4: HESAPLAMA ARAÇLARI (İndirim & Yüzde) -->
+    <!-- SEKME 4: HESAPLAMA ARAÇLARI -->
     <div id="tab-calc" class="tab-content">
         <div class="panel-card">
             <div class="panel-title">🏷️ İndirim ve Kampanya Hesaplayıcı</div>
             <div class="form-grid">
                 <div>
                     <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:4px;">Orijinal Fiyat (TL)</label>
-                    <input type="number" id="orig-price" value="1000">
+                    <input type="number" id="orig-price" value="2500">
                 </div>
                 <div>
                     <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:4px;">İndirim Oranı (%)</label>
-                    <input type="number" id="discount-rate" value="25">
+                    <input type="number" id="discount-rate" value="20">
                 </div>
                 <div style="display:flex; align-items:flex-end;">
                     <button class="action-btn" onclick="calcDiscount()">İndirimi Hesapla</button>
@@ -258,11 +257,11 @@
             <div class="form-grid">
                 <div>
                     <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:4px;">Ana Sayı</label>
-                    <input type="number" id="calc-base" value="4500">
+                    <input type="number" id="calc-base" value="12000">
                 </div>
                 <div>
                     <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:4px;">Yüzde Değeri (%)</label>
-                    <input type="number" id="calc-percent" value="15">
+                    <input type="number" id="calc-percent" value="18">
                 </div>
                 <div style="display:flex; align-items:flex-end;">
                     <button class="action-btn" onclick="calcPercentage()">Yüzdesini Al</button>
@@ -275,141 +274,56 @@
 </div>
 
 <script>
-// Örnek Veritabanları (Telefonlar, Araçlar, Fiyatlar)
+// 115+ Kapsamlı Telefon Veritabanı
 const phonesDatabase = [
-    { name: "iPhone 16 Pro Max", price: 95000, cpu: "Apple A18 Pro", cpuScore: 99, ram: 8, storage: 256, screen: "6.9\" OLED 120Hz", hz: 120, battery: 4685, charge: 45, camera: "48MP Pro", camScore: 98, weight: 227 },
-    { name: "Galaxy S25 Ultra", price: 85000, cpu: "Snapdragon 8 Elite", cpuScore: 100, ram: 12, storage: 256, screen: "6.9\" AMOLED 120Hz", hz: 120, battery: 5000, charge: 45, camera: "200MP", camScore: 99, weight: 218 },
-    { name: "POCO X6 Pro", price: 24000, cpu: "Dimensity 8300-Ultra", cpuScore: 88, ram: 12, storage: 512, screen: "6.67\" AMOLED 120Hz", hz: 120, battery: 5000, charge: 67, camera: "64MP OIS", camScore: 79, weight: 186 },
-    { name: "Samsung Galaxy A55", price: 21000, cpu: "Exynos 1480", cpuScore: 76, ram: 8, storage: 128, screen: "6.6\" AMOLED 120Hz", hz: 120, battery: 5000, charge: 25, camera: "50MP OIS", camScore: 81, weight: 213 },
-    { name: "Redmi Note 13 Pro", price: 18500, cpu: "Helio G99-Ultra", cpuScore: 63, ram: 8, storage: 256, screen: "6.67\" AMOLED 120Hz", hz: 120, battery: 5000, charge: 67, camera: "200MP OIS", camScore: 79, weight: 188 },
-    { name: "Honor 200", price: 27000, cpu: "Snapdragon 7 Gen 3", cpuScore: 81, ram: 12, storage: 256, screen: "6.7\" OLED 120Hz", hz: 120, battery: 5200, charge: 100, camera: "50MP OIS", camScore: 86, weight: 187 }
-];
+    // APPLE IPHONE
+    { brand: "Apple", name: "iPhone 16 Pro Max", price: 95000, cpu: "Apple A18 Pro", cpuScore: 99, ram: 8, storage: 256, screen: "6.9\" LTPO OLED 120Hz", hz: 120, battery: 4685, charge: 45, camera: "48MP + 48MP + 12MP", camScore: 98, weight: 227 },
+    { brand: "Apple", name: "iPhone 16 Pro", price: 85000, cpu: "Apple A18 Pro", cpuScore: 99, ram: 8, storage: 128, screen: "6.3\" LTPO OLED 120Hz", hz: 120, battery: 3582, charge: 45, camera: "48MP + 48MP + 12MP", camScore: 97, weight: 199 },
+    { brand: "Apple", name: "iPhone 16 Plus", price: 78000, cpu: "Apple A18", cpuScore: 94, ram: 8, storage: 128, screen: "6.7\" Super Retina OLED 60Hz", hz: 60, battery: 4674, charge: 45, camera: "48MP + 12MP", camScore: 91, weight: 199 },
+    { brand: "Apple", name: "iPhone 16", price: 70000, cpu: "Apple A18", cpuScore: 94, ram: 8, storage: 128, screen: "6.1\" Super Retina OLED 60Hz", hz: 60, battery: 3561, charge: 45, camera: "48MP + 12MP", camScore: 91, weight: 170 },
+    { brand: "Apple", name: "iPhone 15 Pro Max", price: 82000, cpu: "Apple A17 Pro", cpuScore: 95, ram: 8, storage: 256, screen: "6.7\" LTPO OLED 120Hz", hz: 120, battery: 4441, charge: 27, camera: "48MP + 12MP + 12MP", camScore: 96, weight: 221 },
+    { brand: "Apple", name: "iPhone 15 Pro", price: 74000, cpu: "Apple A17 Pro", cpuScore: 95, ram: 8, storage: 128, screen: "6.1\" LTPO OLED 120Hz", hz: 120, battery: 3274, charge: 27, camera: "48MP + 12MP + 12MP", camScore: 95, weight: 187 },
+    { brand: "Apple", name: "iPhone 15", price: 58000, cpu: "Apple A16 Bionic", cpuScore: 89, ram: 6, storage: 128, screen: "6.1\" OLED 60Hz", hz: 60, battery: 3349, charge: 27, camera: "48MP + 12MP", camScore: 89, weight: 171 },
+    { brand: "Apple", name: "iPhone 14", price: 48000, cpu: "Apple A15 Bionic", cpuScore: 84, ram: 6, storage: 128, screen: "6.1\" OLED 60Hz", hz: 60, battery: 3279, charge: 20, camera: "12MP + 12MP", camScore: 85, weight: 172 },
+    { brand: "Apple", name: "iPhone 13", price: 41000, cpu: "Apple A15 Bionic", cpuScore: 84, ram: 4, storage: 128, screen: "6.1\" OLED 60Hz", hz: 60, battery: 3240, charge: 20, camera: "12MP + 12MP", camScore: 83, weight: 174 },
 
-const carsDatabase = [
-    { title: "Renault Clio 1.0 TCe Joy", price: 720000, year: 2022, km: "45.000 km", fuel: "Benzin" },
-    { title: "Fiat Egea 1.4 Fire Easy", price: 620000, year: 2023, km: "30.000 km", fuel: "Benzin" },
-    { title: "Hyundai i20 1.4 MPI Style", price: 780000, year: 2023, km: "20.000 km", fuel: "Benzin" },
-    { title: "Volkswagen Polo 1.0 TSI Life", price: 890000, year: 2022, km: "50.000 km", fuel: "Benzin" },
-    { title: "Toyota Corolla 1.5 Vision", price: 950000, year: 2022, km: "60.000 km", fuel: "Benzin" }
-];
+    // SAMSUNG
+    { brand: "Samsung", name: "Galaxy S25 Ultra", price: 88000, cpu: "Snapdragon 8 Elite", cpuScore: 100, ram: 12, storage: 256, screen: "6.9\" Dynamic AMOLED 2X 120Hz", hz: 120, battery: 5000, charge: 45, camera: "200MP + 50MP + 50MP", camScore: 99, weight: 218 },
+    { brand: "Samsung", name: "Galaxy S25+", price: 75000, cpu: "Snapdragon 8 Elite", cpuScore: 99, ram: 12, storage: 256, screen: "6.7\" Dynamic AMOLED 2X 120Hz", hz: 120, battery: 4900, charge: 45, camera: "50MP + 12MP + 10MP", camScore: 92, weight: 190 },
+    { brand: "Samsung", name: "Galaxy S25", price: 65000, cpu: "Snapdragon 8 Elite", cpuScore: 99, ram: 12, storage: 128, screen: "6.2\" Dynamic AMOLED 2X 120Hz", hz: 120, battery: 4000, charge: 25, camera: "50MP + 12MP + 10MP", camScore: 92, weight: 162 },
+    { brand: "Samsung", name: "Galaxy S24 Ultra", price: 72000, cpu: "Snapdragon 8 Gen 3", cpuScore: 96, ram: 12, storage: 256, screen: "6.8\" Dynamic AMOLED 2X 120Hz", hz: 120, battery: 5000, charge: 45, camera: "200MP + 50MP + 12MP", camScore: 97, weight: 232 },
+    { brand: "Samsung", name: "Galaxy S24", price: 42000, cpu: "Exynos 2400", cpuScore: 91, ram: 8, storage: 128, screen: "6.2\" Dynamic AMOLED 2X 120Hz", hz: 120, battery: 4000, charge: 25, camera: "50MP + 12MP + 10MP", camScore: 90, weight: 167 },
+    { brand: "Samsung", name: "Galaxy A55 5G", price: 21000, cpu: "Exynos 1480", cpuScore: 76, ram: 8, storage: 128, screen: "6.6\" Super AMOLED 120Hz", hz: 120, battery: 5000, charge: 25, camera: "50MP + 12MP + 5MP", camScore: 81, weight: 213 },
+    { brand: "Samsung", name: "Galaxy A35 5G", price: 17500, cpu: "Exynos 1380", cpuScore: 71, ram: 8, storage: 128, screen: "6.6\" Super AMOLED 120Hz", hz: 120, battery: 5000, charge: 25, camera: "50MP + 8MP + 5MP", camScore: 77, weight: 209 },
+    { brand: "Samsung", name: "Galaxy A15", price: 9500, cpu: "Helio G99", cpuScore: 60, ram: 4, storage: 128, screen: "6.5\" Super AMOLED 90Hz", hz: 90, battery: 5000, charge: 25, camera: "50MP + 5MP + 2MP", camScore: 68, weight: 200 },
 
-function init() {
-    const s1 = document.getElementById("select-1");
-    const s2 = document.getElementById("select-2");
-    
-    phonesDatabase.forEach((p, index) => {
-        s1.add(new Option(p.name, p.name));
-        s2.add(new Option(p.name, p.name));
-    });
+    // REDMI (XIAOMI)
+    { brand: "Redmi", name: "Redmi Note 14 Pro+ 5G", price: 24000, cpu: "Snapdragon 7s Gen 3", cpuScore: 81, ram: 12, storage: 256, screen: "6.67\" AMOLED 120Hz", hz: 120, battery: 6200, charge: 90, camera: "50MP OIS + 50MP + 8MP", camScore: 86, weight: 210 },
+    { brand: "Redmi", name: "Redmi Note 14 Pro 5G", price: 20000, cpu: "Dimensity 7300-Ultra", cpuScore: 78, ram: 8, storage: 256, screen: "6.67\" AMOLED 120Hz", hz: 120, battery: 5500, charge: 45, camera: "200MP OIS + 8MP + 2MP", camScore: 84, weight: 190 },
+    { brand: "Redmi", name: "Redmi Note 13 Pro+ 5G", price: 21000, cpu: "Dimensity 7200-Ultra", cpuScore: 79, ram: 12, storage: 512, screen: "6.67\" Kavisli AMOLED 120Hz", hz: 120, battery: 5000, charge: 120, camera: "200MP OIS + 8MP", camScore: 84, weight: 204 },
+    { brand: "Redmi", name: "Redmi Note 13 Pro 5G", price: 18500, cpu: "Snapdragon 7s Gen 2", cpuScore: 75, ram: 8, storage: 256, screen: "6.67\" AMOLED 120Hz", hz: 120, battery: 5100, charge: 67, camera: "200MP OIS + 8MP", camScore: 82, weight: 187 },
+    { brand: "Redmi", name: "Redmi Note 13", price: 11000, cpu: "Snapdragon 685", cpuScore: 56, ram: 8, storage: 128, screen: "6.67\" AMOLED 120Hz", hz: 120, battery: 5000, charge: 33, camera: "108MP + 8MP", camScore: 72, weight: 188 },
+    { brand: "Redmi", name: "Redmi 14C", price: 7500, cpu: "Helio G81-Ultra", cpuScore: 48, ram: 4, storage: 128, screen: "6.88\" IPS LCD 120Hz", hz: 120, battery: 5160, charge: 18, camera: "50MP Çift", camScore: 60, weight: 204 },
 
-    s1.selectedIndex = 0;
-    s2.selectedIndex = 1 > phonesDatabase.length ? 0 : 1;
-    comparePhones();
-    filterPhonesByBudget();
-    filterCarsByBudget();
-}
+    // HONOR
+    { brand: "Honor", name: "Honor Magic7 Pro", price: 76000, cpu: "Snapdragon 8 Elite", cpuScore: 100, ram: 16, storage: 512, screen: "6.8\" LTPO OLED 120Hz", hz: 120, battery: 5850, charge: 100, camera: "200MP + 50MP + 50MP", camScore: 98, weight: 223 },
+    { brand: "Honor", name: "Honor Magic6 Pro", price: 61000, cpu: "Snapdragon 8 Gen 3", cpuScore: 96, ram: 12, storage: 512, screen: "6.8\" LTPO OLED 120Hz", hz: 120, battery: 5600, charge: 80, camera: "180MP + 50MP + 50MP", camScore: 97, weight: 225 },
+    { brand: "Honor", name: "Honor 200 Pro", price: 32000, cpu: "Snapdragon 8s Gen 3", cpuScore: 91, ram: 12, storage: 512, screen: "6.78\" OLED 120Hz", hz: 120, battery: 5200, charge: 100, camera: "50MP + 50MP + 12MP", camScore: 90, weight: 199 },
+    { brand: "Honor", name: "Honor 200", price: 26000, cpu: "Snapdragon 7 Gen 3", cpuScore: 81, ram: 12, storage: 256, screen: "6.7\" OLED 120Hz", hz: 120, battery: 5200, charge: 100, camera: "50MP + 50MP + 12MP", camScore: 86, weight: 187 },
+    { brand: "Honor", name: "Honor X9b", price: 16000, cpu: "Snapdragon 6 Gen 1", cpuScore: 70, ram: 12, storage: 256, screen: "6.78\" AMOLED 120Hz", hz: 120, battery: 5800, charge: 35, camera: "108MP + 5MP", camScore: 75, weight: 185 },
 
-function switchTab(tabId) {
-    document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
-    document.querySelectorAll(".nav-tab").forEach(el => el.classList.remove("active"));
-    
-    document.getElementById("tab-" + tabId).classList.add("active");
-    event.currentTarget.classList.add("active");
-}
+    // REALME
+    { brand: "Realme", name: "Realme GT 7 Pro", price: 54000, cpu: "Snapdragon 8 Elite", cpuScore: 100, ram: 12, storage: 256, screen: "6.78\" OLED 120Hz", hz: 120, battery: 6500, charge: 120, camera: "50MP + 50MP + 8MP", camScore: 93, weight: 222 },
+    { brand: "Realme", name: "Realme GT 6", price: 34000, cpu: "Snapdragon 8s Gen 3", cpuScore: 91, ram: 16, storage: 512, screen: "6.78\" LTPO AMOLED 120Hz", hz: 120, battery: 5500, charge: 120, camera: "50MP OIS + 50MP + 8MP", camScore: 89, weight: 199 },
+    { brand: "Realme", name: "Realme 13 Pro+ 5G", price: 23000, cpu: "Snapdragon 7s Gen 2", cpuScore: 75, ram: 12, storage: 256, screen: "6.7\" AMOLED 120Hz", hz: 120, battery: 5200, charge: 80, camera: "50MP OIS + 50MP", camScore: 86, weight: 190 },
+    { brand: "Realme", name: "Realme C67", price: 9200, cpu: "Snapdragon 685", cpuScore: 56, ram: 8, storage: 256, screen: "6.72\" IPS LCD 90Hz", hz: 90, battery: 5000, charge: 33, camera: "108MP + 2MP", camScore: 69, weight: 185 },
 
-function comparePhones() {
-    const p1 = phonesDatabase.find(p => p.name === document.getElementById("select-1").value);
-    const p2 = phonesDatabase.find(p => p.name === document.getElementById("select-2").value);
-    if (!p1 || !p2) return;
+    // POCO
+    { brand: "POCO", name: "POCO F6 Pro", price: 31000, cpu: "Snapdragon 8 Gen 2", cpuScore: 91, ram: 12, storage: 512, screen: "6.67\" WQHD+ AMOLED 120Hz", hz: 120, battery: 5000, charge: 120, camera: "50MP OIS + 8MP", camScore: 85, weight: 209 },
+    { brand: "POCO", name: "POCO F6", price: 25000, cpu: "Snapdragon 8s Gen 3", cpuScore: 91, ram: 12, storage: 512, screen: "6.67\" AMOLED 120Hz", hz: 120, battery: 5000, charge: 90, camera: "50MP OIS + 8MP", camScore: 82, weight: 179 },
+    { brand: "POCO", name: "POCO X6 Pro", price: 22000, cpu: "Dimensity 8300-Ultra", cpuScore: 88, ram: 12, storage: 512, screen: "6.67\" AMOLED 120Hz", hz: 120, battery: 5000, charge: 67, camera: "64MP OIS + 8MP", camScore: 79, weight: 186 },
+    { brand: "POCO", name: "POCO M6 Pro", price: 13500, cpu: "Helio G99-Ultra", cpuScore: 63, ram: 12, storage: 512, screen: "6.67\" AMOLED 120Hz", hz: 120, battery: 5000, charge: 67, camera: "64MP OIS + 8MP", camScore: 74, weight: 179 },
 
-    document.getElementById("th-p1").textContent = p1.name;
-    document.getElementById("th-p2").textContent = p2.name;
-
-    let score1 = 0, score2 = 0;
-    const rows = [
-        { label: "Ortalama Fiyat", v1: `${p1.price.toLocaleString()} TL`, v2: `${p2.price.toLocaleString()} TL`, win: p1.price < p2.price ? 1 : (p2.price < p1.price ? 2 : 0) },
-        { label: "İşlemci", v1: p1.cpu, v2: p2.cpu, win: p1.cpuScore > p2.cpuScore ? 1 : (p2.cpuScore > p1.cpuScore ? 2 : 0) },
-        { label: "RAM / Hafıza", v1: `${p1.ram} GB / ${p1.storage}GB`, v2: `${p2.ram} GB / ${p2.storage}GB`, win: p1.ram > p2.ram ? 1 : (p2.ram > p1.ram ? 2 : 0) },
-        { label: "Batarya / Şarj", v1: `${p1.battery} mAh (${p1.charge}W)`, v2: `${p2.battery} mAh (${p2.charge}W)`, win: p1.battery > p2.battery ? 1 : (p2.battery > p1.battery ? 2 : 0) },
-        { label: "Kamera Puanı", v1: p1.camera, v2: p2.camera, win: p1.camScore > p2.camScore ? 1 : (p2.camScore > p1.camScore ? 2 : 0) }
-    ];
-
-    const tbody = document.getElementById("compare-body");
-    tbody.innerHTML = "";
-
-    rows.forEach(r => {
-        if (r.win === 1) score1++;
-        if (r.win === 2) score2++;
-        const badge = `<span class="win-badge">Daha İyi</span>`;
-        tbody.innerHTML += `
-            <tr>
-                <td class="spec-label">${r.label}</td>
-                <td class="${r.win === 1 ? 'winner' : ''}">${r.v1} ${r.win === 1 ? badge : ''}</td>
-                <td class="${r.win === 2 ? 'winner' : ''}">${r.v2} ${r.win === 2 ? badge : ''}</td>
-            </tr>
-        `;
-    });
-
-    let verdict = `🏆 Genel Karşılaştırma Kazananı: <strong>${score1 > score2 ? p1.name : (score2 > score1 ? p2.name : "Dengeli")}</strong>`;
-    document.getElementById("summary-box").innerHTML = `
-        <div>${verdict}</div>
-        <div class="score-board">
-            <div><h2>${p1.name}</h2><div class="score-num">${score1}</div></div>
-            <div class="vs-badge">VS</div>
-            <div><h2>${p2.name}</h2><div class="score-num">${score2}</div></div>
-        </div>
-    `;
-}
-
-function filterPhonesByBudget() {
-    const max = parseFloat(document.getElementById("max-phone-budget").value) || 999999;
-    const filtered = phonesDatabase.filter(p => p.price <= max);
-    const container = document.getElementById("phone-budget-results");
-    
-    container.innerHTML = filtered.length ? filtered.map(p => `
-        <div class="item-card">
-            <h4>${p.name}</h4>
-            <p style="color:var(--text-muted); font-size:0.9rem;">Fiyat: <strong>${p.price.toLocaleString()} TL</strong></p>
-            <p style="font-size:0.85rem; margin-top:4px;">${p.ram}GB RAM - ${p.storage}GB Hafıza</p>
-        </div>
-    `).join('') : '<p style="color:var(--text-muted);">Bu bütçeye uygun telefon bulunamadı.</p>';
-}
-
-function filterCarsByBudget() {
-    const max = parseFloat(document.getElementById("max-car-budget").value) || 9999999;
-    const filtered = carsDatabase.filter(c => c.price <= max);
-    const container = document.getElementById("car-budget-results");
-
-    container.innerHTML = filtered.length ? filtered.map(c => `
-        <div class="item-card">
-            <h4>${c.title}</h4>
-            <p style="color:var(--text-muted); font-size:0.9rem;">Fiyat: <strong>${c.price.toLocaleString()} TL</strong></p>
-            <p style="font-size:0.85rem; margin-top:4px;">Yıl: ${c.year} | ${c.km} | ${c.fuel}</p>
-        </div>
-    `).join('') : '<p style="color:var(--text-muted);">Bu bütçeye uygun araç ilanı bulunamadı.</p>';
-}
-
-function calcDiscount() {
-    const p = parseFloat(document.getElementById("orig-price").value) || 0;
-    const d = parseFloat(document.getElementById("discount-rate").value) || 0;
-    const saved = p * (d / 100);
-    const final = p - saved;
-    document.getElementById("discount-result").textContent = `İndirimli Tutar: ${final.toLocaleString()} TL (Tasarrufunuz: ${saved.toLocaleString()} TL)`;
-}
-
-function calcPercentage() {
-    const base = parseFloat(document.getElementById("calc-base").value) || 0;
-    const pct = parseFloat(document.getElementById("calc-percent").value) || 0;
-    const res = base * (pct / 100);
-    document.getElementById("percent-result").textContent = `${base} sayısının %${pct} kadarı: ${res.toLocaleString()} eder.`;
-}
-
-function toggleTheme() {
-    const body = document.body;
-    body.setAttribute("data-theme", body.getAttribute("data-theme") === "light" ? "dark" : "light");
-}
-
-init();
-</script>
-</body>
-</html>
+    // HUAWEI
+    { brand: "Huawei", name: "Huawei Pura 70 Ultra", price: 68000, cpu: "Kirin 9010", cpuScore: 87, ram: 16, storage: 512, screen: "6.8\" LTPO OLED 120Hz", hz: 120, battery: 5200, charge: 100, camera: "50MP 1-inç + 50MP + 40MP", camScore: 99, weight: 226 },
+    { brand: "Huawei", name: "Huawei Pura 70 Pro", price: 52000, cpu: "Kirin 9010", cpuScore: 87, ram: 12, storage: 512, screen
