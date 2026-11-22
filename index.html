@@ -110,7 +110,7 @@ function degerBul(telefon, alan, desen) {
 }
 
 function karsilastir() {
-  const t1 = telefonlar.find(t => t.model === secim1.value);
+ const t1 = telefonlar.find(t => t.model === secim1.value);
   const t2 = telefonlar.find(t => t.model === secim2.value);
 
   if (!t1 || !t2) {
@@ -223,6 +223,9 @@ function karsilastir() {
 
 
     
+
+document.getElementById("karsilastirBtn")
+  .addEventListener("click", karsilastir);
 
 </script>
 </body>
