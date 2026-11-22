@@ -98,12 +98,58 @@ b<600000?"Eski model Fiat, Renault ve Tofaş ilanlarını inceleyebilirsin.":
 "Renault, Fiat, Opel ve Hyundai ilanlarını inceleyebilirsin.";
 document.getElementById('arabaSonuc').innerText=t;
 }
-function karsilastir(){
-let a=document.getElementById('telefon1').value;
-let b=document.getElementById('telefon2').value;
-document.getElementById('karsilastirmaSonuc').innerText=
-a+" ve "+b+" modellerini teknik özelliklerine göre karşılaştırmalısın.";
+
+function karsilastir() {
+    let a = document.getElementById('telefon1').value.trim().toLowerCase();
+    let b = document.getElementById('telefon2').value.trim().toLowerCase();
+
+    const telefonlar = {
+        "iphone 11": {
+            ekran: "6.1 inç LCD",
+            islemci: "Apple A13 Bionic",
+            kamera: "12 MP + 12 MP",
+            batarya: "3110 mAh",
+            ram: "4 GB"
+        },
+        "redmi note 10": {
+            ekran: "6.43 inç AMOLED",
+            islemci: "Snapdragon 678",
+            kamera: "48 MP + 8 MP + 2 MP + 2 MP",
+            batarya: "5000 mAh",
+            ram: "4/6 GB"
+        },
+        "redmi note 14 pro": {
+            ekran: "6.67 inç AMOLED",
+            islemci: "Helio G100 Ultra",
+            kamera: "200 MP",
+            batarya: "5500 mAh",
+            ram: "8/12 GB"
+        }
+    };
+
+    let telefonA = telefonlar[a];
+    let telefonB = telefonlar[b];
+
+    let sonuc = document.getElementById('karsilastirmaSonuc');
+
+    if (!telefonA || !telefonB) {
+        sonuc.innerHTML = "Bu telefonlardan biri listemizde yok. iPhone 11, Redmi Note 10 veya Redmi Note 14 Pro deneyin.";
+        return;
+    }
+
+    sonuc.innerHTML = `
+        <h3>${a.toUpperCase()} - ${b.toUpperCase()}</h3>
+        <table border="1" cellpadding="8" style="width:100%; border-collapse:collapse;">
+            <tr><th>Özellik</th><th>${a}</th><th>${b}</th></tr>
+            <tr><td>Ekran</td><td>${telefonA.ekran}</td><td>${telefonB.ekran}</td></tr>
+            <tr><td>İşlemci</td><td>${telefonA.islemci}</td><td>${telefonB.islemci}</td></tr>
+            <tr><td>Kamera</td><td>${telefonA.kamera}</td><td>${telefonB.kamera}</td></tr>
+            <tr><td>Batarya</td><td>${telefonA.batarya}</td><td>${telefonB.batarya}</td></tr>
+            <tr><td>RAM</td><td>${telefonA.ram}</td><td>${telefonB.ram}</td></tr>
+        </table>
+    `;
 }
+
 </script>
 </body>
 </html>
