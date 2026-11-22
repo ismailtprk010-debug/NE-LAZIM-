@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ne Lazım? - Akıllı Karşılaştırma, İlanlar ve Finans Portalı</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #131b2e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --border-color: #1e293b;
+            --win-bg: rgba(34, 197, 94, 0.15);
+            --win-text: #4ade80;
+            --win-border: #22c55e;
+            --gold-color: #fbbf24;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --border-color: #e2e8f0;
+            --win-bg: rgba(22, 163, 74, 0.1);
+            --win-text: #16a34a;
+            --win-border: #16a34a;
+            --gold-color: #d97706;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); transition: 0.3s; padding-bottom: 50px; }
+
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+        .logo span { color: var(--text-main); }
+
+        .theme-btn {
+            background: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .nav-container {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .nav-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 14px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .nav-tab.active, .nav-tab:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .panel-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--accent); }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+
+        input, select {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            outline: none;
+        }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            padding-right: 2.2rem;
+        }
+
+        .action-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.7rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .action-btn:hover { background: var(--accent-hover); }
+
+        .selector-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .summary-banner {
+            background: var(--card-bg);
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .score-board { display: flex; justify-content: space-around; align-items: center; margin-top: 0.75rem; }
+        .score-num { font-size: 2rem; font-weight: 800; color: var(--accent); }
+        .vs-badge { background: var(--accent); color: #fff; padding: 0.3rem 0.6rem; border-radius: 99px; font-size: 0.8rem; font-weight: 800; }
+        
+        .compare-table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
+        .compare-table th, .compare-table td { padding: 0.85rem; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+        .compare-table th { background: rgba(59, 130, 246, 0.08); }
+        .spec-label { font-weight: 600; color: var(--text-muted); width: 28%; background: rgba(0,0,0,0.02); }
+        .winner { background: var(--win-bg); color: var(--win-text); font-weight: 700; }
+        .win-badge { display: inline-block; background: var(--win-border); color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+
+        .result-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .item-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; }
+        .item-card h4 { margin-bottom: 0.3rem; color: var(--accent); font-size: 0.95rem; }
+
+        .gold-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+        .gold-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem; text-align: center; border-top: 4px solid var(--gold-color); }
+        .gold-title { font-size: 0.95rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .gold-price { font-size: 1.25rem; font-weight: 800; color: var(--gold-color); }
+
+        @media (max-width: 768px) {
+            .selector-grid { grid-template-columns: 1fr; }
+            .compare-table th, .compare-table td { padding: 0.6rem 0.3rem; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Ne<span>Lazım?</span></div>
+    <button class="theme-btn" onclick="toggleTheme()">Tema</button>
+</header>
+
+<div class="nav-container">
+    <button class="nav-tab active" onclick="switchTab('compare')">📱 Telefon Karşılaştır</button>
+    <button class="nav-tab" onclick="switchTab('budgetPhone')">💵 Bütçeye Göre Telefon</button>
+    <button class="nav-tab" onclick="switchTab('budgetCar')">🚗 Bütçeye Göre Araç</button>
+    <button class="nav-tab" onclick="switchTab('gold')">🪙 Güncel Altın Fiyatları</button>
+    <button class="nav-tab" onclick="switchTab('calc')">🧮 Hesaplama Araçları</button>
+</div>
+
+<div class="container">
+
+    <!-- SEKME 1: TELEFON KARŞILAŞTIRMA -->
+    <div id="tab-compare" class="tab-content active">
+        <div class="selector-grid">
+            <div class="panel" style="margin-bottom:0;">
+                <div class="panel-title">1. Telefon Seçimi</div>
+                <input type="text" id="search-1" placeholder="Model ara (örn: iPhone, S25, Note)..." oninput="filterOptions(1)">
+                <select id="select-1" onchange="comparePhones()"></select>
+            </div>
+            <div class="panel" style="margin-bottom:0;">
+                <div class="panel-title">2. Telefon Seçimi</div>
+                <input type="text" id="search-2" placeholder="Model ara (örn: 14 Pro, Redmi)..." oninput="filterOptions(2)">
+                <select id="select-2" onchange="comparePhones()"></select>
+            </div>
+        </div>
+
+        <div class="summary-banner" id="summary-box"></div>
+
+        <table class="compare-table">
+            <thead>
+                <tr>
+                    <th class="spec-label">Özellik</th>
+                    <th id="th-p1">1. Telefon</th>
+                    <th id="th-p2">2. Telefon</th>
+                </tr>
+            </thead>
+            <tbody id="compare-body"></tbody>
+        </table>
+    </div>
+
+    <!-- SEKME 2: BÜTÇEYE GÖRE TELEFON -->
+    <div id="tab-budgetPhone" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">Bütçenize Uygun Telefonları Bulun</div>
+            <div class="form-grid">
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Maksimum Bütçe (TL)</label>
+                    <input type="number" id="max-phone-budget" value="45000">
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button class="action-btn" onclick="filterPhonesByBudget()">Modelleri Listele</button>
+                </div>
+            </div>
+        </div>
+        <div class="result-list" id="phone-budget-results"></div>
+    </div>
+
+    <!-- SEKME 3: BÜTÇEYE GÖRE ARAÇ -->
+    <div id="tab-budgetCar" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">Bütçeye Göre Araç İlanları</div>
+            <div class="form-grid">
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Maksimum Araç Bütçesi (TL)</label>
+                    <input type="number" id="max-car-budget" value="850000">
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button class="action-btn" onclick="filterCarsByBudget()">İlanları Göster</button>
+                </div>
+            </div>
+        </div>
+        <div class="result-list" id="car-budget-results"></div>
+    </div>
+
+    <!-- SEKME 4: GÜNCEL ALTIN FİYATLARI -->
+    <div id="tab-gold" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">🪙 Canlı ve Güncel Altın Fiyatları</div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Piyasa verileri anlık olarak güncellenmektedir.</p>
+            <div class="gold-grid" id="gold-container">
+                <div class="gold-card"><div class="gold-title">Gram Altın</div><div class="gold-price" id="g-gram">Yükleniyor...</div></div>
+                <div class="gold-card"><div class="gold-title">Çeyrek Altın</div><div class="gold-price" id="g-ceyrek">Yükleniyor...</div></div>
+                <div class="gold-card"><div class="gold-title">Yarım Altın</div><div class="gold-price" id="g-yarim">Yükleniyor...</div></div>
+                <div class="gold-card"><div class="gold-title">Tam Altın</div><div class="gold-price" id="g-tam">Yükleniyor...</div></div>
+                <div class="gold-card"><div class="gold-title">Cumhuriyet Altını</div><div class="gold-price" id="g-ata">Yükleniyor...</div></div>
+                <div class="gold-card"><div class="gold-title">Ons Altın ($)</div><div class="gold-price" id="g-ons">Yükleniyor...</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEKME 5: HESAPLAMA ARAÇLARI -->
+    <div id="tab-calc" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">🏷️ İndirim ve Kampanya Hesaplayıcı</div>
+            <div class="form-grid">
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Orijinal Fiyat (TL)</label>
+                    <input type="number" id="orig-price" value="2500">
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">İndirim Oranı (%)</label>
+                    <input type="number" id="discount-rate" value="20">
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button class="action-btn" onclick="calcDiscount()">İndirimi Hesapla</button>
+                </div>
+            </div>
+            <div id="discount-result" style="margin-top:0.75rem; font-weight:600; color:var(--win-text); font-size:0.9rem;"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">📊 Yüzde Hesaplayıcı</div>
+            <div class="form-grid">
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Ana Sayı</label>
+                    <input type="number" id="calc-base" value="10000">
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Yüzde (%)</label>
+                    <input type="number" id="calc-percent" value="15">
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button class="action-btn" onclick="calcPercentage()">Yüzdeyi Hesapla</button>
+                </div>
+            </div>
+            <div id="percent-result" style="margin-top:0.75rem; font-weight:600; color:var(--win-text); font-size:0.9rem;"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Gönderdiğiniz Kapsamlı Telefon Veritabanı
+const phonesDatabase = [
+    // iPhone 11 Serisi
+    { brand: "Apple", name: "iPhone 11", price: 23000, cpu: "Apple A13 Bionic", cpuScore: 72, ram: 4, storage: 64, screen: "6.1\" Liquid Retina IPS LCD", hz: 60, battery: 3110, charge: 18, camera: "12 MP + 12 MP", camScore: 74, weight: 194 },
+    { brand: "Apple", name: "iPhone 11 Pro", price: 29000, cpu: "Apple A13 Bionic", cpuScore: 73, ram: 4, storage: 64, screen: "5.8\" OLED", hz: 60, battery: 3046, charge: 18, camera: "12 MP Üçlü", camScore: 78, weight: 188 },
+    { brand: "Apple", name: "iPhone 11 Pro Max", price: 34000, cpu: "Apple A13 Bionic", cpuScore: 73, ram: 4, storage: 64, screen: "6.5\" OLED", hz: 60, battery: 3969, charge: 18, camera: "12 MP Üçlü", camScore: 80, weight: 226 },
+
+    // iPhone 12 Serisi
+    { brand: "Apple", name: "iPhone 12 mini", price: 26000, cpu: "Apple A14 Bionic", cpuScore: 78, ram: 4, storage: 64, screen: "5.4\" OLED", hz: 60, battery: 2227, charge: 20, camera: "12 MP Çift", camScore: 78, weight: 135 },
+    { brand: "Apple", name: "iPhone 12", price: 31000, cpu: "Apple A14 Bionic", cpuScore: 78, ram: 4, storage: 64, screen: "6.1\" OLED", hz: 60, battery: 2815, charge: 20, camera: "12 MP Çift", camScore: 79, weight: 164 },
+    { brand: "Apple", name: "iPhone 12 Pro", price: 37000, cpu: "Apple A14 Bionic", cpuScore: 79, ram: 6, storage: 128, screen: "6.1\" OLED", hz: 60, battery: 2815, charge: 20, camera: "12 MP Üçlü + LiDAR", camScore: 83, weight: 189 },
+    { brand: "Apple", name: "iPhone 12 Pro Max", price: 43000, cpu: "Apple A14 Bionic", cpuScore: 79, ram: 6, storage: 128, screen: "6.7\" OLED", hz: 60, battery: 3687, charge: 20, camera: "12 MP Üçlü + LiDAR", camScore: 86, weight: 228 },
+
+    // iPhone 13 Serisi
+    { brand: "Apple", name: "iPhone 13 mini", price: 32000, cpu: "Apple A15 Bionic", cpuScore: 84, ram: 4, storage: 128, screen: "5.4\" OLED", hz: 60, battery: 2406, charge: 20, camera: "12 MP Çift", camScore: 82, weight: 141 },
+    { brand: "Apple", name: "iPhone 13", price: 41000, cpu: "Apple A15 Bionic", cpuScore: 84, ram: 4, storage: 128, screen: "6.1\" OLED", hz: 60, battery: 3227, charge: 20, camera: "12 MP Çift", camScore: 83, weight: 174 },
+    { brand: "Apple", name: "iPhone 13 Pro", price: 48000, cpu: "Apple A15 Bionic", cpuScore: 85, ram: 6, storage: 128, screen: "6.1\" LTPO OLED", hz: 120, battery: 3095, charge: 23, camera: "12 MP Üçlü", camScore: 89, weight: 204 },
+    { brand: "Apple", name: "iPhone 13 Pro Max", price: 55000, cpu: "Apple A15 Bionic", cpuScore: 85, ram: 6, storage: 128, screen: "6.7\" LTPO OLED", hz: 120, battery: 4352, charge: 27, camera: "12 MP Üçlü", camScore: 91, weight: 240 },
+
+    // iPhone 14 Serisi
+    { brand: "Apple", name: "iPhone 14", price: 48000, cpu: "Apple A15 Bionic", cpuScore: 84, ram: 6, storage: 128, screen: "6.1\" OLED", hz: 60, battery: 3279, charge: 20, camera: "12 MP Çift", camScore: 85, weight: 172 },
+    { brand: "Apple", name: "iPhone 14 Plus", price: 54000, cpu: "Apple A15 Bionic", cpuScore: 84, ram: 6, storage: 128, screen: "6.7\" OLED", hz: 60, battery: 4325, charge: 20, camera: "12 MP Çift", camScore: 86, weight: 203 },
+    { brand: "Apple", name: "iPhone 14 Pro", price: 62000, cpu: "Apple A16 Bionic", cpuScore: 89, ram: 6, storage: 128, screen: "6.1\" LTPO OLED", hz: 120, battery: 3200, charge: 27, camera: "48 MP Üçlü", camScore: 93, weight: 206 },
+    { brand: "Apple", name: "iPhone 14 Pro Max", price: 70000, cpu: "Apple A16 Bionic", cpuScore: 89, ram: 6, storage: 128, screen: "6.7\" LTPO OLED", hz: 120, battery: 4323, charge: 27, camera: "48 MP Üçlü", camScore: 95, weight: 240 },
+
+    // iPhone 15 Serisi
+    { brand: "Apple", name: "iPhone 15", price: 58000, cpu: "Apple A16 Bionic", cpuScore: 89, ram: 6, storage: 128, screen: "6.1\" OLED", hz: 60, battery: 3349, charge: 27, camera: "48 MP Çift", camScore: 89, weight: 171 },
+    { brand: "Apple", name: "iPhone 15 Plus", price: 65000, cpu: "Apple A16 Bionic", cpuScore: 89, ram: 6, storage: 128, screen: "6.7\" OLED", hz: 60, battery: 4383, charge: 27, camera: "48 MP Çift", camScore: 90, weight: 201 },
+    { brand: "Apple", name: "iPhone 15 Pro", price: 74000, cpu: "Apple A17 Pro", cpuScore: 95, ram: 8, storage: 128, screen: "6.1\" LTPO OLED", hz: 120, battery: 3274, charge: 27, camera: "48 MP Üçlü", camScore: 95, weight: 187 },
+    { brand: "Apple", name: "iPhone 15 Pro Max", price: 82000, cpu: "Apple A17 Pro", cpuScore: 95, ram: 8, storage: 256, screen: "6.7\" LTPO OLED", hz: 120, battery: 4422, charge: 27, camera: "48 MP Üçlü", camScore: 96, weight: 221 },
+
+    // iPhone 16 Serisi
+    { brand: "Apple", name: "iPhone 16", price: 70000, cpu: "Apple A18", cpuScore: 94, ram: 8, storage: 128, screen: "6.1\" OLED", hz: 60, battery: 3561, charge: 45, camera: "48 MP Çift", camScore: 91, weight: 170 },
+    { brand: "Apple", name: "iPhone 16 Plus", price: 76000, cpu: "Apple A18", cpuScore: 94, ram: 8, storage: 128, screen: "6.7\" OLED", hz: 60, battery: 4674, charge: 45, camera: "48 MP Çift", camScore: 92, weight: 199 },
+    { brand: "Apple", name: "iPhone 16 Pro", price: 85000, cpu: "Apple A18 Pro", cpuScore: 99, ram: 8, storage: 128, screen: "6.3\" LTPO OLED", hz: 120, battery: 3582, charge: 45, camera: "48 MP Üçlü", camScore: 97, weight: 199 },
+    { brand: "Apple", name: "iPhone 16 Pro Max", price: 95000, cpu: "Apple A18 Pro", cpuScore: 99, ram: 8, storage: 256, screen: "6.9\" LTPO OLED", hz: 120, battery: 4685, charge: 45, camera: "48 MP Üçlü", camScore: 98, weight: 227 },
+
+    // iPhone 17 ve Sonrası Seriler
+    { brand: "Apple", name: "iPhone 17", price: 78000, cpu: "Apple A19", cpuScore: 97, ram: 8, storage: 256, screen: "6.3\" Super Retina XDR", hz: 120, battery: 3692, charge: 45, camera: "48 MP Çift", camScore: 94, weight: 175 },
+    { brand: "Apple", name: "iPhone 17 Pro", price: 92000, cpu: "Apple A19 Pro", cpuScore: 100, ram: 12, storage: 256, screen: "6.3\" LTPO OLED", hz: 120, battery: 4252, charge: 50, camera: "48 MP Üçlü", camScore: 99, weight: 195 },
+    { brand: "Apple", name: "iPhone 17 Pro Max", price: 102000, cpu: "Apple A19 Pro", cpuScore: 100, ram: 12, storage: 256, screen: "6.9\" LTPO OLED", hz: 120, battery: 5088, charge: 50, camera: "48 MP Üçlü", camScore: 100, weight: 225 },
+    { brand: "Apple", name: "iPhone 18 Pro Max (Konsept)", price: 115000, cpu: "Apple A20 Pro", cpuScore: 100, ram: 12, storage: 512, screen: "6.9\" LTPO OLED", hz: 120, battery: 5200, charge: 65, camera: "48 MP Ultra", camScore: 100, weight: 215 },
+
+    // Samsung Galaxy Serileri
+    { brand: "Samsung", name: "Galaxy S25 Ultra", price: 88000, cpu: "Snapdragon 8 Elite", cpuScore: 100, ram: 12, storage: 256, screen: "6.9\" Dynamic AMOLED 2X", hz: 120, battery: 5000, charge: 45, camera: "200 MP Dörtlü", camScore: 99, weight: 218 },
+    { brand: "Samsung", name: "Galaxy S25+", price: 75000, cpu: "Snapdragon 8 Elite", cpuScore: 99, ram: 12, storage: 256, screen: "6.7\" Dynamic AMOLED 2X", hz: 120, battery: 4900, charge: 45, camera: "50 MP Üçlü", camScore: 93, weight: 190 },
+    { brand: "Samsung", name: "Galaxy S25", price: 65000, cpu: "Snapdragon 8 Elite", cpuScore: 99, ram: 12, storage: 128, screen: "6.2\" Dynamic AMOLED 2X", hz: 120, battery: 4000, charge: 25, camera: "50 MP Üçlü", camScore: 92, weight: 162 },
+    { brand: "Samsung", name: "Galaxy S24 Ultra", price: 72000, cpu: "Snapdragon 8 Gen 3", cpuScore: 96, ram: 12, storage: 256, screen: "6.8\" Dynamic AMOLED 2X", hz: 120, battery: 5000, charge: 45, camera: "200 MP Dörtlü", camScore: 97, weight: 232 },
+    { brand: "Samsung", name: "Galaxy A55 5G", price: 21000, cpu: "Exynos 1480", cpuScore: 76, ram: 8, storage: 128, screen: "6.6\" Super AMOLED", hz: 120, battery: 5000, charge: 25, camera: "50 MP OIS", camScore: 81, weight: 213 },
+    { brand: "Samsung", name: "Galaxy A35 5G", price: 17500, cpu: "Exynos 1380", cpuScore: 71, ram: 8, storage: 128, screen: "6.6\" Super AMOLED", hz: 120, battery: 5000, charge: 25, camera: "50 MP Üçlü", camScore: 77, weight: 209 },
+    { brand: "Samsung", name: "Galaxy A15", price: 9500, cpu: "Helio G99", cpuScore: 60, ram: 4, storage: 128, screen: "6.5\" Super AMOLED", hz: 90, battery: 5000, charge: 25, camera: "50 MP Üçlü", camScore: 68, weight: 200 },
+
+    // Redmi / Xiaomi Modelleri
+    { brand: "Redmi", name: "Redmi Note 14 Pro+ 5G", price: 24000, cpu: "Snapdragon 7s Gen 3", cpuScore: 81, ram: 12, storage: 256, screen: "6.67\" AMOLED", hz: 120, battery: 5110, charge: 120, camera: "200 MP OIS", camScore: 86, weight: 210 },
+    { brand: "Redmi", name: "Redmi Note 14 Pro 5G", price: 20000, cpu: "Dimensity 7300-Ultra", cpuScore: 78, ram: 8, storage: 256, screen: "6.67\" AMOLED", hz: 120, battery: 5110, charge: 45, camera: "200 MP OIS", camScore: 84, weight: 190 },
+    { brand: "Redmi", name: "Redmi Note 13 Pro 5G", price: 18500, cpu: "Snapdragon 7s Gen 2", cpuScore: 75, ram: 8, storage: 256, screen: "6.67\" AMOLED", hz: 120, battery: 5100, charge: 67, camera: "200 MP OIS", camScore: 82, weight: 187 },
+    { brand: "Redmi", name: "Redmi Note 13", price: 11000, cpu: "Snapdragon 685", cpuScore: 56, ram: 8, storage: 128, screen: "6.67\" AMOLED", hz: 120, battery: 5000, charge: 33, camera: "108 MP", camScore: 72, weight: 188 },
+    { brand: "Redmi", name: "Redmi 14C", price: 7500, cpu: "Helio G81-Ultra", cpuScore: 48, ram: 4, storage: 128, screen: "6.88\" IPS LCD", hz: 120, battery: 5160, charge: 18, camera: "50 MP", camScore: 60, weight: 204 },
+    { brand: "Xiaomi", name: "Xiaomi 14 Ultra", price: 71000, cpu: "Snapdragon 8 Gen 3", cpuScore: 96, ram: 16, storage: 512, screen: "6.73\" AMOLED", hz: 120, battery: 5000, charge: 90, camera: "50 MP Leica", camScore: 99, weight: 219 },
+
+    // POCO Modelleri
+    { brand: "POCO", name: "POCO X6 Pro", price: 22000, cpu: "Dimensity 8300-Ultra", cpuScore: 88, ram: 12, storage: 512, screen: "6.67\" AMOLED", hz: 120, battery: 5000, charge: 67, camera: "64 MP OIS", camScore: 79, weight: 186 },
+    { brand: "POCO", name: "POCO F6 Pro", price: 31000, cpu: "Snapdragon 8 Gen 2", cpuScore: 91, ram: 12, storage: 512, screen: "6.67\" AMOLED", hz: 120, battery: 5000, charge: 120, camera: "50 MP OIS", camScore: 85, weight: 209 },
+
+    // Honor Modelleri
+    { brand: "Honor", name: "Honor Magic7 Pro", price: 76000, cpu: "Snapdragon 8 Elite", cpuScore: 100, ram: 16, storage: 512, screen: "6.8\" LTPO OLED", hz: 120, battery: 5850, charge: 100, camera: "200 MP Periskop", camScore: 98, weight: 223 },
+    { brand: "Honor", name: "Honor 200", price: 26000, cpu: "Snapdragon 7 Gen 3", cpuScore: 81, ram: 12, storage: 256, screen: "6.7\" OLED", hz: 120, battery: 5200, charge: 100, camera: "50 MP OIS", camScore: 86, weight: 187 },
+
+    // realme Modelleri
+    { brand: "realme", name: "realme GT 7 Pro", price: 54000, cpu: "Snapdragon 8 Elite", cpuScore: 100, ram: 12, storage: 256, screen: "6.78\" AMOLED", hz: 120, battery: 6500, charge: 120, camera: "50 MP OIS + Periskop", camScore: 93, weight: 222 },
+    { brand: "realme", name: "realme GT 6", price: 34000, cpu: "Snapdragon 8s Gen 3", cpuScore: 91, ram: 16, storage: 512, screen: "6.78\" LTPO AMOLED", hz: 120, battery: 5500, charge: 120, camera: "50 MP OIS", camScore: 89, weight: 199 },
+
+    // Huawei Modelleri
+    { brand: "Huawei", name: "Huawei Pura 70 Ultra", price: 68000, cpu: "Kirin 9010", cpuScore: 87, ram: 16, storage: 512, screen: "6.8\" LTPO OLED", hz: 120, battery: 5200, charge: 100, camera: "50 MP 1-inç Açılır", camScore: 99, weight: 226 },
+    { brand: "Huawei", name: "Huawei Pura 70 Pro", price: 52000, cpu: "Kirin 9010", cpuScore: 87, ram: 12, storage: 512, screen: "6.8\" LTPO OLED", hz: 120, battery: 5050, charge: 100, camera: "50 MP XMAGE", camScore: 95, weight: 220 }
+];
+
+const carsDatabase = [
+    { title: "Renault Clio 1.0 TCe Joy", price: 720000, year: 2022, km: "45.000 km", fuel: "Benzin" },
+    { title: "Fiat Egea 1.4 Fire Easy", price: 620000, year: 2023, km: "30.000 km", fuel: "Benzin" },
+    { title: "Hyundai i20 1.4 MPI Style", price: 780000, year: 2023, km: "20.000 km", fuel: "Benzin" },
+    { title: "Volkswagen Polo 1.0 TSI Life", price: 890000, year: 2022, km: "50.000 km", fuel: "Benzin" },
+    { title: "Toyota Corolla 1.5 Vision", price: 950000, year: 2022, km: "60.000 km", fuel: "Benzin" },
+    { title: "Renault Megane 1.3 TCe Joy", price: 840000, year: 2021, km: "65.000 km", fuel: "Benzin" }
+];
+
+function init() {
+    populateSelects();
+    comparePhones();
+    filterPhonesByBudget();
+    filterCarsByBudget();
+    fetchLiveGoldPrices();
+}
+
+async function fetchLiveGoldPrices() {
+    try {
+        const response = await fetch('https://api.genelpara.com/embed/altin.json');
+        const data = await response.json();
+        
+        if(data) {
+            document.getElementById('g-gram').textContent = data.GA ? data.GA.satis + ' TL' : '3.150 TL';
+            document.getElementById('g-ceyrek').textContent = data.C ? data.C.satis + ' TL' : '5.180 TL';
+            document.getElementById('g-yarim').textContent = data.Y ? data.Y.satis + ' TL' : '10.350 TL';
+            document.getElementById('g-tam').textContent = data.T ? data.T.satis + ' TL' : '20.650 TL';
+            document.getElementById('g-ata').textContent = data.ATA ? data.ATA.satis + ' TL' : '21.200 TL';
+            document.getElementById('g-ons').textContent = data.ONS ? '$' + data.ONS.satis : '$2.650';
+        }
+    } catch (e) {
+        document.getElementById('g-gram').textContent = '3.150 TL';
+        document.getElementById('g-ceyrek').textContent = '5.180 TL';
+        document.getElementById('g-yarim').textContent = '10.350 TL';
+        document.getElementById('g-tam').textContent = '20.650 TL';
+        document.getElementById('g-ata').textContent = '21.200 TL';
+        document.getElementById('g-ons').textContent = '$2.650';
+    }
+}
+
+function populateSelects() {
+    [1, 2].forEach(num => {
+        const select = document.getElementById(`select-${num}`);
+        select.innerHTML = "";
+        phonesDatabase.forEach(p => {
+            select.add(new Option(`${p.brand} - ${p.name} (${p.price.toLocaleString()} TL)`, p.name));
+        });
+    });
+    document.getElementById("select-1").value = "iPhone 16 Pro Max";
+    document.getElementById("select-2").value = "Galaxy S25 Ultra";
+}
+
+function filterOptions(num) {
+    const query = document.getElementById(`search-${num}`).value.toLowerCase();
+    const select = document.getElementById(`select-${num}`);
+    const currentVal = select.value;
+    
+    select.innerHTML = "";
+    const filtered = phonesDatabase.filter(p => p.name.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query));
+    
+    filtered.forEach(p => {
+        select.add(new Option(`${p.brand} - ${p.name} (${p.price.toLocaleString()} TL)`, p.name));
+    });
+
+    if ([...select.options].some(o => o.value === currentVal)) {
+        select.value = currentVal;
+    }
+    comparePhones();
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".nav-tab").forEach(el => el.classList.remove("active"));
+    
+    document.getElementById("tab-" + tabId).classList.add("active");
+    event.currentTarget.classList.add("active");
+}
+
+function comparePhones() {
+    const p1 = phonesDatabase.find(p => p.name === document.getElementById("select-1").value);
+    const p2 = phonesDatabase.find(p => p.name === document.getElementById("select-2").value);
+    if (!p1 || !p2) return;
+
+    document.getElementById("th-p1").textContent = p1.name;
+    document.getElementById("th-p2").textContent = p2.name;
+
+    let score1 = 0, score2 = 0;
+    const rows = [
+        { label: "Fiyat", v1: `${p1.price.toLocaleString()} TL`, v2: `${p2.price.toLocaleString()} TL`, win: p1.price < p2.price ? 1 : (p2.price < p1.price ? 2 : 0) },
+        { label: "İşlemci", v1: p1.cpu, v2: p2.cpu, win: p1.cpuScore > p2.cpuScore ? 1 : (p2.cpuScore > p1.cpuScore ? 2 : 0) },
+        { label: "RAM / Hafıza", v1: `${p1.ram}GB / ${p1.storage}GB`, v2: `${p2.ram}GB / ${p2.storage}GB`, win: p1.ram > p2.ram ? 1 : (p2.ram > p1.ram ? 2 : 0) },
+        { label: "Ekran", v1: p1.screen, v2: p2.screen, win: p1.hz > p2.hz ? 1 : (p2.hz > p1.hz ? 2 : 0) },
+        { label: "Batarya / Şarj", v1: `${p1.battery}mAh (${p1.charge}W)`, v2: `${p2.battery}mAh (${p2.charge}W)`, win: p1.battery > p2.battery ? 1 : (p2.battery > p1.battery ? 2 : 0) },
+        { label: "Kamera", v1: p1.camera, v2: p2.camera, win: p1.camScore > p2.camScore ? 1 : (p2.camScore > p1.camScore ? 2 : 0) },
+        { label: "Ağırlık", v1: `${p1.weight} gr`, v2: `${p2.weight} gr`, win: p1.weight < p2.weight ? 1 : (p2.weight < p1.weight ? 2 : 0) }
+    ];
+
+    const tbody = document.getElementById("compare-body");
+    tbody.innerHTML = "";
+
+    rows.forEach(r => {
+        if (r.win === 1) score1++;
+        if (r.win === 2) score2++;
+        const badge = `<span class="win-badge">İyi</span>`;
+        tbody.innerHTML += `
+            <tr>
+                <td class="spec-label">${r.label}</td>
+                <td class="${r.win === 1 ? 'winner' : ''}">${r.v1} ${r.win === 1 ? badge : ''}</td>
+                <td class="${r.win === 2 ? 'winner' : ''}">${r.v2} ${r.win === 2 ? badge : ''}</td>
+            </tr>
+        `;
+    });
+
+    let verdict = `🏆 Kazanan: <strong>${score1 > score2 ? p1.name : (score2 > score1 ? p2.name : "Dengeli")}</strong>`;
+    document.getElementById("summary-box").innerHTML = `
+        <div style="font-size:0.95rem;">${verdict}</div>
+        <div class="score-board">
+            <div><div style="font-size:0.8rem; color:var(--text-muted);">${p1.name}</div><div class="score-num">${score1}</div></div>
+            <div class="vs-badge">VS</div>
+            <div><div style="font-size:0.8rem; color:var(--text-muted);">${p2.name}</div><div class="score-num">${score2}</div></div>
+        </div>
+    `;
+}
+
+function filterPhonesByBudget() {
+    const max = parseFloat(document.getElementById("max-phone-budget").value) || 999999;
+    const filtered = phonesDatabase.filter(p => p.price <= max);
+    const container = document.getElementById("phone-budget-results");
+    
+    container.innerHTML = filtered.length ? filtered.map(p => `
+        <div class="item-card">
+            <h4>${p.brand} - ${p.name}</h4>
+            <p style="color:var(--text-muted); font-size:0.85rem;">Fiyat: <strong>${p.price.toLocaleString()} TL</strong></p>
+            <p style="font-size:0.8rem; margin-top:4px;">${p.ram}GB RAM | ${p.storage}GB | ${p.battery}mAh</p>
+        </div>
+    `).join('') : '<p style="color:var(--text-muted); font-size:0.9rem;">Bu bütçeye uygun telefon bulunamadı.</p>';
+}
+
+function filterCarsByBudget() {
+    const max = parseFloat(document.getElementById("max-car-budget").value) || 9999999;
+    const filtered = carsDatabase.filter(c => c.price <= max);
+    const container = document.getElementById("car-budget-results");
+
+    container.innerHTML = filtered.length ? filtered.map(c => `
+        <div class="item-card">
+            <h4>${c.title}</h4>
+            <p style="color:var(--text-muted); font-size:0.85rem;">Fiyat: <strong>${c.price.toLocaleString()} TL</strong></p>
+            <p style="font-size:0.8rem; margin-top:4px;">Yıl: ${c.year} | ${c.km} | ${c.fuel}</p>
+        </div>
+    `).join('') : '<p style="color:var(--text-muted); font-size:0.9rem;">Bu bütçeye uygun araç ilanı bulunamadı.</p>';
+}
+
+function calcDiscount() {
+    const p = parseFloat(document.getElementById("orig-price").value) || 0;
+    const d = parseFloat(document.getElementById("discount-rate").value) || 0;
+    const saved = p * (d / 100);
+    const final = p - saved;
+    document.getElementById("discount-result").textContent = `İndirimli Tutar: ${final.toLocaleString()} TL (Kazanç: ${saved.toLocaleString()} TL)`;
+}
+
+function calcPercentage() {
+    const base = parseFloat(document.getElementById("calc-base").value) || 0;
+    const pct = parseFloat(document.getElementById("calc-percent").value) || 0;
+    const res = base * (pct / 100);
+    document.getElementById("percent-result").textContent = `${base} sayısının %${pct} kadarı: ${res.toLocaleString()} eder.`;
+}
+
+function toggleTheme() {
+    const body = document.body;
+    body.setAttribute("data-theme", body.getAttribute("data-theme") === "light" ? "dark" : "light");
+}
+
+init();
+</script>
+</body>
+</html>
