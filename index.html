@@ -100,42 +100,68 @@ document.getElementById('arabaSonuc').innerText=t;
 }
 
 function karsilastir() {
-    let a = document.getElementById('telefon1').value.trim().toLowerCase();
-    let b = document.getElementById('telefon2').value.trim().toLowerCase();
+    const a = document.getElementById('telefon1').value.trim().toLowerCase();
+    const b = document.getElementById('telefon2').value.trim().toLowerCase();
 
     const telefonlar = {
-        "iphone 11": {
-            ekran: "6.1 inç LCD",
-            islemci: "Apple A13 Bionic",
-            kamera: "12 MP + 12 MP",
-            batarya: "3110 mAh",
-            ram: "4 GB"
-        },
-        "redmi note 10": {
-            ekran: "6.43 inç AMOLED",
-            islemci: "Snapdragon 678",
-            kamera: "48 MP + 8 MP + 2 MP + 2 MP",
-            batarya: "5000 mAh",
-            ram: "4/6 GB"
-        },
-        "redmi note 14 pro": {
-            ekran: "6.67 inç AMOLED",
-            islemci: "Helio G100 Ultra",
-            kamera: "200 MP",
-            batarya: "5500 mAh",
-            ram: "8/12 GB"
-        }
+        "iphone 11": ["LCD 6.1 inç", "A13 Bionic", "12 MP + 12 MP", "3110 mAh", "4 GB", "64/128/256 GB"],
+        "iphone 12": ["OLED 6.1 inç", "A14 Bionic", "12 MP + 12 MP", "2815 mAh", "4 GB", "64/128/256 GB"],
+        "iphone 13": ["OLED 6.1 inç", "A15 Bionic", "12 MP + 12 MP", "3227 mAh", "4 GB", "128/256/512 GB"],
+
+        "samsung a15": ["Super AMOLED 6.5 inç", "Helio G99", "50 MP + 5 MP + 2 MP", "5000 mAh", "4/6/8 GB", "128/256 GB"],
+        "samsung a25": ["Super AMOLED 6.5 inç", "Exynos 1280", "50 MP + 8 MP + 2 MP", "5000 mAh", "6/8 GB", "128/256 GB"],
+        "samsung s23": ["Dynamic AMOLED 2X 6.1 inç", "Snapdragon 8 Gen 2", "50 MP + 12 MP + 10 MP", "3900 mAh", "8 GB", "128/256 GB"],
+
+        "redmi note 10": ["AMOLED 6.43 inç", "Snapdragon 678", "48 MP + 8 MP + 2 MP + 2 MP", "5000 mAh", "4/6 GB", "64/128 GB"],
+        "redmi note 14": ["AMOLED 6.67 inç", "Helio G99-Ultra", "108 MP + 2 MP + 2 MP", "5500 mAh", "6/8 GB", "128/256 GB"],
+        "redmi note 14 pro": ["AMOLED 6.67 inç", "Helio G100-Ultra", "200 MP + 8 MP + 2 MP", "5500 mAh", "8/12 GB", "256/512 GB"],
+        "redmi note 14 pro 5g": ["AMOLED 6.67 inç", "Dimensity 7300-Ultra", "200 MP + 8 MP + 2 MP", "5110 mAh", "8/12 GB", "256/512 GB"],
+
+        "poco x6": ["AMOLED 6.67 inç", "Snapdragon 7s Gen 2", "64 MP + 8 MP + 2 MP", "5100 mAh", "8/12 GB", "256/512 GB"],
+
+        "realme c55": ["IPS LCD 6.72 inç", "Helio G88", "64 MP + 2 MP", "5000 mAh", "6/8 GB", "128/256 GB"],
+
+        "oppo a78": ["AMOLED 6.43 inç", "Snapdragon 680", "50 MP + 2 MP", "5000 mAh", "8 GB", "128/256 GB"]
     };
 
-    let telefonA = telefonlar[a];
-    let telefonB = telefonlar[b];
+    const t1 = telefonlar[a];
+    const t2 = telefonlar[b];
+    const sonuc = document.getElementById('karsilastirmaSonuc');
 
-    let sonuc = document.getElementById('karsilastirmaSonuc');
-
-    if (!telefonA || !telefonB) {
-        sonuc.innerHTML = "Bu telefonlardan biri listemizde yok. iPhone 11, Redmi Note 10 veya Redmi Note 14 Pro deneyin.";
+    if (!t1 || !t2) {
+        sonuc.innerHTML = "Bu model henüz telefon listemizde bulunmuyor. Desteklenen model adlarını kontrol edin.";
         return;
     }
+
+    const ozellikler = [
+        "Ekran", "İşlemci", "Arka kamera",
+        "Batarya", "RAM", "Depolama"
+    ];
+
+    let html = `
+    <div style="background:#171717;color:white;padding:18px;border-radius:15px;margin-top:15px">
+    <h3 style="text-align:center;color:#ff4545">TELEFON KARŞILAŞTIRMASI</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center">
+    <div style="background:#292929;padding:12px;border-radius:10px">${a.toUpperCase()}</div>
+    <div style="background:#292929;padding:12px;border-radius:10px">${b.toUpperCase()}</div>
+    </div>
+    `;
+
+    ozellikler.forEach((ozellik, i) => {
+        html += `
+        <div style="padding:12px;border-bottom:1px solid #444">
+        <b style="color:#ff4545">${ozellik}</b>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+        <span>${t1[i]}</span>
+        <span>${t2[i]}</span>
+        </div>
+        </div>`;
+    });
+
+    html += `</div>`;
+    sonuc.innerHTML = html;
+}
+
 
     sonuc.innerHTML = `
         <h3>${a.toUpperCase()} - ${b.toUpperCase()}</h3>
