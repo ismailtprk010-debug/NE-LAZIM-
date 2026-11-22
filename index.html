@@ -108,125 +108,640 @@ function sayiBul(deger, desen) {
 function degerBul(telefon, alan, desen) {
   return sayiBul(telefon[alan], desen);
 }
-
-function karsilastir() {
- const t1 = telefonlar.find(t => t.model === secim1.value);
-  const t2 = telefonlar.find(t => t.model === secim2.value);
-
-  if (!t1 || !t2) {
-    sonuc.innerHTML = "<p>İki telefon da seçmelisin.</p>";
-    return;
-  }
-
-  if (t1.model === t2.model) {
-    sonuc.innerHTML = "<p>İki farklı telefon seçmelisin.</p>";
-    return;
-  }
-
-  const kategoriler = [
-    {
-      ad: "RAM",
-      a: degerBul(t1, "ram", /(\d+)\s*GB/i),
-      b: degerBul(t2, "ram", /(\d+)\s*GB/i)
-    },
-    {
-      ad: "Kamera",
-      a: t1.kamera ? [...t1.kamera.matchAll(/(\d+)\s*MP/gi)]
-        .reduce((s, x) => s + Number(x[1]), 0) : null,
-      b: t2.kamera ? [...t2.kamera.matchAll(/(\d+)\s*MP/gi)]
-        .reduce((s, x) => s + Number(x[1]), 0) : null
-    },
-    {
-      ad: "Ekran yenileme hızı",
-      a: degerBul(t1, "ekran", /(\d+)\s*Hz/i),
-      b: degerBul(t2, "ekran", /(\d+)\s*Hz/i)
-    },
-    {
-      ad: "Batarya",
-      a: degerBul(t1, "batarya", /(\d+)\s*mAh/i),
-      b: degerBul(t2, "batarya", /(\d+)\s*mAh/i)
-    },
-    {
-      ad: "Depolama",
-      a: degerBul(t1, "depolama", /(\d+)\s*GB/i),
-      b: degerBul(t2, "depolama", /(\d+)\s*GB/i)
-    }
-  ];
-
-  let puan1 = 0;
-  let puan2 = 0;
-  let karsilastirilan = 0;
-  let detay = "";
-
-  kategoriler.forEach(k => {
-    if (k.a === null || k.b === null) {
-      detay += `<tr><td>${k.ad}</td><td colspan="2">Yeterli veri yok</td></tr>`;
-      return;
-    }
-
-    karsilastirilan++;
-
-    let sonucMetni = "Berabere";
-    if (k.a > k.b) {
-      puan1++;
-      sonucMetni = t1.model + " önde";
-    } else if (k.b > k.a) {
-      puan2++;
-      sonucMetni = t2.model + " önde";
-    }
-
-    detay += `<tr><td>${k.ad}</td><td>${k.a}</td><td>${k.b}</td></tr>`;
-  });
-
-  const toplam = puan1 + puan2;
-  const skor1 = toplam ? Math.round(puan1 / toplam * 100) : 0;
-  const skor2 = toplam ? 100 - skor1 : 0;
-
-  let kazanan = "Berabere";
-  let aciklama = "Karşılaştırılabilen özelliklerde eşit sonuç çıktı.";
-
-  if (puan1 > puan2) {
-    kazanan = t1.model;
-    aciklama = "Karşılaştırılabilen özelliklerde daha fazla kategoride önde.";
-  } else if (puan2 > puan1) {
-    kazanan = t2.model;
-    aciklama = "Karşılaştırılabilen özelliklerde daha fazla kategoride önde.";
-  }
-
-  sonuc.innerHTML = `
-    <h3>🏆 Sistem değerlendirmesi</h3>
-    <h2>${kazanan}</h2>
-    <p>${aciklama}</p>
-
-    <div style="display:flex;gap:15px;flex-wrap:wrap">
-      <div><b>${t1.model}</b><h2>${skor1}/100</h2></div>
-      <div><b>${t2.model}</b><h2>${skor2}/100</h2></div>
-    </div>
-
-    <p>Değerlendirilen kategori: ${karsilastirilan}/5</p>
-
-    <h3>Özellik karşılaştırması</h3>
-    <table>
-      <tr><th>Özellik</th><th>${t1.model}</th><th>${t2.model}</th></tr>
-      ${detay}
-    </table>
-
-    <p style="font-size:12px;color:#aaa">
-      Puanlar yalnızca karşılaştırılabilir sayısal özelliklere göre hesaplanır.
-      Kamera megapiksel toplamı tek başına fotoğraf kalitesini göstermez.
-      İşlemci performansı ve gerçek kamera kalitesi bu puana dahil değildir.
-      Eksik bilgiler tahmin edilmez.
-    </p>
-  `;
-}
-
-
-
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ne Lazım? | Akıllı Telefon Karşılaştırma Platformu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Özel kaydırma çubuğu ve yumuşak geçişler */
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .winner-glow {
+            box-shadow: 0 0 0 2px #10b981, 0 10px 25px -5px rgba(16, 185, 129, 0.15);
+        }
+        .fade-in {
+            animation: fadeIn 0.35s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
 
-document.getElementById("karsilastirBtn")
-  .addEventListener("click", karsilastir);
+    <!-- Üst Navigasyon / Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-md">
+                    <i data-lucide="smartphone" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">Ne Lazım<span class="text-blue-600">?</span></h1>
+                        <span class="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">VS Motoru</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-500">İki telefonu seç, teknik özellikleri anında karşılaştır</p>
+                </div>
+            </div>
 
+            <button onclick="swapPhones()" title="Telefonların Yerini Değiştir" class="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-3 py-2 rounded-xl transition-colors">
+                <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Yer Değiştir</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Ana İçerik -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8">
+
+        <!-- Telefon Seçim Paneli -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
+            <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
+                
+                <!-- 1. Telefon Seçimi -->
+                <div class="md:col-span-5 space-y-1.5">
+                    <label for="phone1-select" class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-blue-600">
+                        <span>1. Telefon Seçimi</span>
+                        <span id="phone1-brand-badge" class="text-slate-400 font-medium">Apple</span>
+                    </label>
+                    <div class="relative">
+                        <select id="phone1-select" onchange="updateComparison()" class="w-full appearance-none bg-slate-50 border border-slate-300 text-slate-900 text-sm sm:text-base font-semibold rounded-xl px-4 py-3.5 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
+                            <!-- JS ile doldurulacak -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                            <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orta VS İkonu -->
+                <div class="md:col-span-1 flex justify-center py-1 md:py-0 md:pt-5">
+                    <button onclick="swapPhones()" class="w-10 h-10 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center shadow-md hover:scale-105 hover:bg-blue-600 transition-all" title="Telefonları Değiştir">
+                        VS
+                    </button>
+                </div>
+
+                <!-- 2. Telefon Seçimi -->
+                <div class="md:col-span-5 space-y-1.5">
+                    <label for="phone2-select" class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-indigo-600">
+                        <span>2. Telefon Seçimi</span>
+                        <span id="phone2-brand-badge" class="text-slate-400 font-medium">Samsung</span>
+                    </label>
+                    <div class="relative">
+                        <select id="phone2-select" onchange="updateComparison()" class="w-full appearance-none bg-slate-50 border border-slate-300 text-slate-900 text-sm sm:text-base font-semibold rounded-xl px-4 py-3.5 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer">
+                            <!-- JS ile doldurulacak -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                            <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Genel Kazanan ve Özet Kartı -->
+        <section id="summary-banner" class="fade-in">
+            <!-- JS ile dinamik oluşturulacak -->
+        </section>
+
+        <!-- Cihaz Üst Bilgi Kartları (Görsel, Model, Fiyat) -->
+        <section id="device-headers" class="grid grid-cols-2 gap-3 sm:gap-6">
+            <!-- JS ile dinamik oluşturulacak -->
+        </section>
+
+        <!-- Detaylı Teknik Özellik Karşılaştırma Tablosu -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-5 h-5 text-blue-600"></i>
+                    Detaylı Teknik Karşılaştırma
+                </h2>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
+                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Daha İyi
+                    </span>
+                </div>
+            </div>
+
+            <div id="comparison-rows" class="divide-y divide-slate-100">
+                <!-- Karşılaştırma satırları JS ile buraya basılacak -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Alt Bilgi (Footer) -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+        <div class="max-w-6xl mx-auto px-4 text-center text-xs sm:text-sm text-slate-500">
+            <p class="font-semibold text-slate-700 mb-1">Ne Lazım? Akıllı Karşılaştırma Sistemi</p>
+            <p>Fiyatlar tahmini Türkiye piyasa ortalamasıdır. Teknik veriler üretici spesifikasyonları ve sentetik test ortalamalarına dayanmaktadır.</p>
+        </div>
+    </footer>
+
+    <!-- Uygulama Mantığı ve Veri Tabanı -->
+    <script>
+        /**
+         * Zengin Akıllı Telefon Veri Tabanı
+         * Her cihaz için sayısal karşılaştırma değerleri (score/num) ve kullanıcıya gösterilecek metinler yer alır.
+         */
+        const phonesDatabase = [
+            {
+                id: "iphone-16-pro-max",
+                brand: "Apple",
+                name: "iPhone 16 Pro Max",
+                releaseYear: "2024",
+                priceTL: 99999,
+                colorGradient: "from-slate-700 to-stone-900",
+                accentColor: "#475569",
+                specs: {
+                    cpu: { text: "Apple A18 Pro (3 nm)", score: 1940000, sub: "6 Çekirdek • 4.05 GHz" },
+                    ram: { text: "8 GB", val: 8, sub: "LPDDR5X" },
+                    storage: { text: "256 GB / 512 GB / 1 TB", val: 1024, sub: "NVMe Yüksek Hızlı" },
+                    display: { text: "6.9\" LTPO Super Retina XDR OLED", val: 120, sub: "1320x2868 • 120Hz • 2000 nit" },
+                    battery: { text: "4685 mAh", val: 4685, sub: "25W MagSafe • 40W Kablolu" },
+                    camera: { text: "48 MP Ana + 48 MP Ultra + 12 MP 5x Periskop", val: 96, sub: "4K 120fps Dolby Vision" },
+                    os: { text: "iOS 18", val: 18, sub: "5+ Yıl Güncelleme Desteği" },
+                    weight: { text: "227 gram", val: 227, sub: "Grade 5 Titanyum Kasa" }
+                }
+            },
+            {
+                id: "galaxy-s25-ultra",
+                brand: "Samsung",
+                name: "Samsung Galaxy S25 Ultra",
+                releaseYear: "2025",
+                priceTL: 84999,
+                colorGradient: "from-indigo-800 to-slate-900",
+                accentColor: "#3730a3",
+                specs: {
+                    cpu: { text: "Snapdragon 8 Elite for Galaxy", score: 2650000, sub: "8 Çekirdek • 4.47 GHz" },
+                    ram: { text: "12 GB / 16 GB", val: 16, sub: "LPDDR5X" },
+                    storage: { text: "256 GB / 512 GB / 1 TB", val: 1024, sub: "UFS 4.0" },
+                    display: { text: "6.9\" Dynamic LTPO AMOLED 2X", val: 120, sub: "1440x3120 (QHD+) • 120Hz • 2600 nit" },
+                    battery: { text: "5000 mAh", val: 5000, sub: "45W Hızlı Şarj • 15W Kablosuz" },
+                    camera: { text: "200 MP Ana + 50 MP 5x + 10 MP 3x + 50 MP Ultra", val: 98, sub: "8K 30fps • S-Pen Desteği" },
+                    os: { text: "Android 15 (One UI 7)", val: 15, sub: "7 Yıl Güncelleme Garantisi" },
+                    weight: { text: "218 gram", val: 218, sub: "Titanyum Çerçeve • Gorilla Armor 2" }
+                }
+            },
+            {
+                id: "xiaomi-15-pro",
+                brand: "Xiaomi",
+                name: "Xiaomi 15 Pro",
+                releaseYear: "2025",
+                priceTL: 68500,
+                colorGradient: "from-emerald-700 to-teal-950",
+                accentColor: "#047857",
+                specs: {
+                    cpu: { text: "Qualcomm Snapdragon 8 Elite", score: 2580000, sub: "8 Çekirdek • 4.32 GHz" },
+                    ram: { text: "12 GB / 16 GB", val: 16, sub: "LPDDR5X" },
+                    storage: { text: "256 GB / 512 GB / 1 TB", val: 1024, sub: "UFS 4.0" },
+                    display: { text: "6.73\" LTPO AMOLED (2K)", val: 120, sub: "1440x3200 • 120Hz • 3200 nit" },
+                    battery: { text: "6100 mAh", val: 6100, sub: "90W HyperCharge • 50W Kablosuz" },
+                    camera: { text: "50 MP Leica Ana + 50 MP 5x Periskop + 50 MP Ultra", val: 95, sub: "Leica Summilux Optik • 8K Video" },
+                    os: { text: "Android 15 (HyperOS 2)", val: 15, sub: "Yapay Zeka Destekli Arayüz" },
+                    weight: { text: "213 gram", val: 213, sub: "Dragon Crystal Cam 2.0" }
+                }
+            },
+            {
+                id: "pixel-9-pro-xl",
+                brand: "Google",
+                name: "Google Pixel 9 Pro XL",
+                releaseYear: "2024",
+                priceTL: 64999,
+                colorGradient: "from-stone-600 to-neutral-800",
+                accentColor: "#57534e",
+                specs: {
+                    cpu: { text: "Google Tensor G4 (4 nm)", score: 1320000, sub: "8 Çekirdek • Gemini AI Odaklı" },
+                    ram: { text: "16 GB", val: 16, sub: "LPDDR5X" },
+                    storage: { text: "128 GB / 256 GB / 512 GB / 1 TB", val: 1024, sub: "UFS 3.1" },
+                    display: { text: "6.8\" Super Actua LTPO OLED", val: 120, sub: "1344x2992 • 120Hz • 3000 nit" },
+                    battery: { text: "5060 mAh", val: 5060, sub: "37W Kablolu • 23W Kablosuz" },
+                    camera: { text: "50 MP Ana + 48 MP 5x Telefoto + 48 MP Ultra", val: 94, sub: "Super Res Zoom 30x • 8K Video" },
+                    os: { text: "Android 15 (Saf Android)", val: 15, sub: "7 Yıl Pixel Drop & Güncelleme" },
+                    weight: { text: "221 gram", val: 221, sub: "Gorilla Glass Victus 2" }
+                }
+            },
+            {
+                id: "iphone-15",
+                brand: "Apple",
+                name: "iPhone 15",
+                releaseYear: "2023",
+                priceTL: 54999,
+                colorGradient: "from-sky-500 to-blue-700",
+                accentColor: "#0284c7",
+                specs: {
+                    cpu: { text: "Apple A16 Bionic (4 nm)", score: 1470000, sub: "6 Çekirdek • 3.46 GHz" },
+                    ram: { text: "6 GB", val: 6, sub: "LPDDR5" },
+                    storage: { text: "128 GB / 256 GB / 512 GB", val: 512, sub: "NVMe" },
+                    display: { text: "6.1\" Super Retina XDR OLED", val: 60, sub: "1179x2556 • 60Hz • 2000 nit" },
+                    battery: { text: "3349 mAh", val: 3349, sub: "20W Hızlı Şarj • Dynamic Island" },
+                    camera: { text: "48 MP Ana + 12 MP Ultra Geniş", val: 85, sub: "2x Optik Kalite Zoom • 4K 60fps" },
+                    os: { text: "iOS 18", val: 18, sub: "Uzun Ömürlü iOS Desteği" },
+                    weight: { text: "171 gram", val: 171, sub: "Alüminyum Kasa • Hafif Tasarım" }
+                }
+            },
+            {
+                id: "galaxy-s24",
+                brand: "Samsung",
+                name: "Samsung Galaxy S24",
+                releaseYear: "2024",
+                priceTL: 41999,
+                colorGradient: "from-amber-500 to-orange-700",
+                accentColor: "#d97706",
+                specs: {
+                    cpu: { text: "Samsung Exynos 2400 (4 nm)", score: 1750000, sub: "10 Çekirdek • 3.2 GHz" },
+                    ram: { text: "8 GB", val: 8, sub: "LPDDR5X" },
+                    storage: { text: "128 GB / 256 GB", val: 256, sub: "UFS 4.0 (256GB)" },
+                    display: { text: "6.2\" Dynamic LTPO AMOLED 2X", val: 120, sub: "1080x2340 • 1-120Hz • 2600 nit" },
+                    battery: { text: "4000 mAh", val: 4000, sub: "25W Kablolu • 15W Kablosuz" },
+                    camera: { text: "50 MP Ana + 10 MP 3x Telefoto + 12 MP Ultra", val: 88, sub: "Galaxy AI • 8K 30fps Video" },
+                    os: { text: "Android 14 (One UI 6.1)", val: 14, sub: "7 Yıl Güncelleme Garantisi" },
+                    weight: { text: "167 gram", val: 167, sub: "Armor Aluminum 2 • Kompakt" }
+                }
+            },
+            {
+                id: "redmi-note-13-pro-plus",
+                brand: "Xiaomi Redmi",
+                name: "Redmi Note 13 Pro+ 5G",
+                releaseYear: "2024",
+                priceTL: 22499,
+                colorGradient: "from-purple-600 to-fuchsia-800",
+                accentColor: "#9333ea",
+                specs: {
+                    cpu: { text: "MediaTek Dimensity 7200-Ultra", score: 765000, sub: "8 Çekirdek • 2.8 GHz (4 nm)" },
+                    ram: { text: "12 GB", val: 12, sub: "LPDDR5" },
+                    storage: { text: "512 GB", val: 512, sub: "UFS 3.1" },
+                    display: { text: "6.67\" Kavisli CrystalRes AMOLED", val: 120, sub: "1220x2712 (1.5K) • 120Hz • 1800 nit" },
+                    battery: { text: "5000 mAh", val: 5000, sub: "120W HyperCharge (19 dk'da %100)" },
+                    camera: { text: "200 MP OIS Ana + 8 MP Ultra + 2 MP Makro", val: 80, sub: "4x Kayıpsız Sensör Zoom • 4K 30fps" },
+                    os: { text: "Android 14 (HyperOS)", val: 14, sub: "IP68 Suya ve Toza Dayanıklılık" },
+                    weight: { text: "204 gram", val: 204, sub: "Gorilla Glass Victus" }
+                }
+            },
+            {
+                id: "poco-x6-pro",
+                brand: "POCO",
+                name: "POCO X6 Pro 5G",
+                releaseYear: "2024",
+                priceTL: 19999,
+                colorGradient: "from-yellow-500 to-amber-700",
+                accentColor: "#eab308",
+                specs: {
+                    cpu: { text: "MediaTek Dimensity 8300-Ultra", score: 1390000, sub: "8 Çekirdek • 3.35 GHz (F/P Canavarı)" },
+                    ram: { text: "12 GB", val: 12, sub: "LPDDR5X" },
+                    storage: { text: "512 GB", val: 512, sub: "UFS 4.0" },
+                    display: { text: "6.67\" Flow AMOLED (1.5K)", val: 120, sub: "1220x2712 • 120Hz • 1800 nit" },
+                    battery: { text: "5000 mAh", val: 5000, sub: "67W Turbo Şarj" },
+                    camera: { text: "64 MP OIS Ana + 8 MP Ultra + 2 MP Makro", val: 76, sub: "OIS + EIS Çift Sabitleme" },
+                    os: { text: "Android 14 (HyperOS)", val: 14, sub: "WildBoost Oyun Optimizasyonu" },
+                    weight: { text: "186 gram", val: 186, sub: "İnce ve Hafif Gövde" }
+                }
+            }
+        ];
+
+        // Karşılaştırma kriterleri konfigürasyonu
+        // higherIsBetter: true (büyük değer kazanır), false (küçük değer kazanır - örn: ağırlık), null (bilgi amaçlı, kazanan yok)
+        const comparisonCategories = [
+            { key: "cpu", label: "İşlemci & Performans", icon: "cpu", compareField: "score", higherIsBetter: true, formatMetric: (s) => `AnTuTu ~${(s.score / 1000000).toFixed(2)}M Puan` },
+            { key: "ram", label: "RAM Kapasitesi", icon: "memory-stick", compareField: "val", higherIsBetter: true },
+            { key: "storage", label: "Maks. Dahili Hafıza", icon: "hard-drive", compareField: "val", higherIsBetter: true },
+            { key: "display", label: "Ekran & Yenileme Hızı", icon: "monitor-smartphone", compareField: "val", higherIsBetter: true, formatMetric: (s) => `${s.val} Hz` },
+            { key: "battery", label: "Batarya & Şarj", icon: "battery-charging", compareField: "val", higherIsBetter: true },
+            { key: "camera", label: "Kamera Sistemi", icon: "camera", compareField: "val", higherIsBetter: true, formatMetric: (s) => `Kamera Skoru: ${s.val}/100` },
+            { key: "weight", label: "Ağırlık (Daha Hafif)", icon: "feather", compareField: "val", higherIsBetter: false },
+            { key: "os", label: "İşletim Sistemi", icon: "layers", compareField: null, higherIsBetter: null }
+        ];
+
+        // Sayfa yüklendiğinde dropdownları doldur ve varsayılan karşılaştırmayı başlat
+        window.addEventListener('DOMContentLoaded', () => {
+            populateSelects();
+            // Varsayılan olarak iPhone 16 Pro Max (0) ve Samsung Galaxy S25 Ultra (1) seçili gelsin
+            document.getElementById('phone1-select').selectedIndex = 0;
+            document.getElementById('phone2-select').selectedIndex = 1;
+            updateComparison();
+        });
+
+        // Seçim kutularını veri tabanından doldur
+        function populateSelects() {
+            const select1 = document.getElementById('phone1-select');
+            const select2 = document.getElementById('phone2-select');
+
+            phonesDatabase.forEach((phone, index) => {
+                const optionText = `${phone.name} (${formatPrice(phone.priceTL)})`;
+                
+                const opt1 = document.createElement('option');
+                opt1.value = phone.id;
+                opt1.textContent = optionText;
+                select1.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = phone.id;
+                opt2.textContent = optionText;
+                select2.appendChild(opt2);
+            });
+        }
+
+        // İki telefonun yerini değiştir
+        function swapPhones() {
+            const select1 = document.getElementById('phone1-select');
+            const select2 = document.getElementById('phone2-select');
+            const temp = select1.value;
+            select1.value = select2.value;
+            select2.value = temp;
+            updateComparison();
+        }
+
+        // Fiyatı Türk Lirası formatına çevir
+        function formatPrice(amount) {
+            return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(amount);
+        }
+
+        // Ana karşılaştırma motoru ve arayüz güncelleyici
+        function updateComparison() {
+            const id1 = document.getElementById('phone1-select').value;
+            const id2 = document.getElementById('phone2-select').value;
+
+            const phone1 = phonesDatabase.find(p => p.id === id1);
+            const phone2 = phonesDatabase.find(p => p.id === id2);
+
+            if (!phone1 || !phone2) return;
+
+            // Marka rozetlerini güncelle
+            document.getElementById('phone1-brand-badge').textContent = `${phone1.brand} • ${phone1.releaseYear}`;
+            document.getElementById('phone2-brand-badge').textContent = `${phone2.brand} • ${phone2.releaseYear}`;
+
+            // Puanları hesapla
+            let p1Wins = 0;
+            let p2Wins = 0;
+            let ties = 0;
+
+            const results = comparisonCategories.map(cat => {
+                const spec1 = phone1.specs[cat.key];
+                const spec2 = phone2.specs[cat.key];
+                let winner = 'tie'; // 'p1', 'p2', veya 'tie'
+
+                if (cat.compareField && cat.higherIsBetter !== null) {
+                    const val1 = spec1[cat.compareField];
+                    const val2 = spec2[cat.compareField];
+
+                    if (val1 !== val2) {
+                        if (cat.higherIsBetter) {
+                            winner = val1 > val2 ? 'p1' : 'p2';
+                        } else {
+                            winner = val1 < val2 ? 'p1' : 'p2';
+                        }
+                    }
+                }
+
+                if (winner === 'p1') p1Wins++;
+                else if (winner === 'p2') p2Wins++;
+                else if (cat.higherIsBetter !== null) ties++;
+
+                return { cat, spec1, spec2, winner };
+            });
+
+            renderSummaryBanner(phone1, phone2, p1Wins, p2Wins, ties);
+            renderDeviceHeaders(phone1, phone2, p1Wins, p2Wins);
+            renderComparisonRows(results);
+
+            // Lucide ikonlarını yenile
+            lucide.createIcons();
+        }
+
+        // Üst Kazanan Özeti Kartını Oluştur
+        function renderSummaryBanner(p1, p2, p1Wins, p2Wins, ties) {
+            const container = document.getElementById('summary-banner');
+            const totalScored = p1Wins + p2Wins + ties;
+            
+            let title = "";
+            let subtitle = "";
+            let badgeText = "";
+            let bgClass = "from-slate-800 to-slate-900";
+
+            if (p1.id === p2.id) {
+                title = "Aynı İki Telefonu Karşılaştırıyorsunuz";
+                subtitle = "Farklı bir model seçerek detaylı teknik üstünlükleri görebilirsiniz.";
+                badgeText = "Eşit";
+            } else if (p1Wins > p2Wins) {
+                title = `Genel Kazanan: ${p1.name}`;
+                subtitle = `Karşılaştırılan ${totalScored} teknik kriterin ${p1Wins} tanesinde üstünlük sağlayarak öne geçiyor.`;
+                badgeText = `${p1Wins} - ${p2Wins} Önde`;
+                bgClass = "from-blue-600 via-blue-700 to-indigo-800";
+            } else if (p2Wins > p1Wins) {
+                title = `Genel Kazanan: ${p2.name}`;
+                subtitle = `Karşılaştırılan ${totalScored} teknik kriterin ${p2Wins} tanesinde üstünlük sağlayarak öne geçiyor.`;
+                badgeText = `${p2Wins} - ${p1Wins} Önde`;
+                bgClass = "from-indigo-600 via-indigo-700 to-purple-800";
+            } else {
+                title = "Kıran Kırana Mücadele: Berabere!";
+                subtitle = `Her iki cihaz da ${p1Wins} farklı kategoride üstünlük sağlayarak eşit puan topladı.`;
+                badgeText = `${p1Wins} - ${p2Wins} Eşitlik`;
+                bgClass = "from-emerald-600 to-teal-800";
+            }
+
+            // Fiyat farkı analizi
+            const priceDiff = Math.abs(p1.priceTL - p2.priceTL);
+            const cheaperPhone = p1.priceTL < p2.priceTL ? p1.name : (p2.priceTL < p1.priceTL ? p2.name : null);
+            const priceNote = cheaperPhone 
+                ? `${cheaperPhone}, ${formatPrice(priceDiff)} daha uygun fiyatlı.` 
+                : "İki telefon da aynı fiyat seviyesinde.";
+
+            container.innerHTML = `
+                <div class="bg-gradient-to-r ${bgClass} rounded-2xl p-5 sm:p-6 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="space-y-1.5">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-bold tracking-wide uppercase">
+                                <i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-300"></i>
+                                ${badgeText}
+                            </span>
+                            <span class="text-xs text-blue-100 bg-black/20 px-2.5 py-1 rounded-full">
+                                ${priceNote}
+                            </span>
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">${title}</h2>
+                        <p class="text-sm text-blue-100/90">${subtitle}</p>
+                    </div>
+
+                    <!-- Skor Göstergesi -->
+                    <div class="w-full md:w-auto flex items-center justify-between md:justify-end gap-4 bg-black/20 backdrop-blur-sm px-4 py-3 rounded-xl border border-white/10">
+                        <div class="text-center">
+                            <div class="text-xs text-blue-200 truncate max-w-[90px] sm:max-w-[120px]">${p1.name}</div>
+                            <div class="text-2xl font-black ${p1Wins > p2Wins ? 'text-emerald-300' : 'text-white'}">${p1Wins}</div>
+                        </div>
+                        <div class="text-xs font-bold text-white/50">SKOR</div>
+                        <div class="text-center">
+                            <div class="text-xs text-blue-200 truncate max-w-[90px] sm:max-w-[120px]">${p2.name}</div>
+                            <div class="text-2xl font-black ${p2Wins > p1Wins ? 'text-emerald-300' : 'text-white'}">${p2Wins}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Telefon Görsel ve Fiyat Kartlarını Oluştur
+        function renderDeviceHeaders(p1, p2, p1Wins, p2Wins) {
+            const container = document.getElementById('device-headers');
+            const devices = [
+                { phone: p1, isWinner: p1Wins > p2Wins && p1.id !== p2.id, wins: p1Wins },
+                { phone: p2, isWinner: p2Wins > p1Wins && p1.id !== p2.id, wins: p2Wins }
+            ];
+
+            container.innerHTML = devices.map(({ phone, isWinner, wins }) => `
+                <div class="bg-white rounded-2xl p-4 sm:p-6 border ${isWinner ? 'border-emerald-400 winner-glow' : 'border-slate-200'} relative flex flex-col items-center text-center transition-all">
+                    ${isWinner ? `
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[11px] sm:text-xs font-bold px-3 py-0.5 rounded-full shadow-sm flex items-center gap-1 whitespace-nowrap">
+                            <i data-lucide="award" class="w-3.5 h-3.5"></i> Kazanan (${wins} Kriter)
+                        </div>
+                    ` : ''}
+
+                    <!-- Temsili Modern Akıllı Telefon İllüstrasyonu (SVG) -->
+                    <div class="w-20 h-36 sm:w-24 sm:h-44 rounded-[18px] bg-gradient-to-br ${phone.colorGradient} p-1.5 shadow-lg my-2 relative flex flex-col justify-between border-2 border-slate-300/40">
+                        <!-- Ekran -->
+                        <div class="w-full h-full bg-slate-900/90 rounded-[13px] relative overflow-hidden flex flex-col items-center justify-between p-2">
+                            <!-- Dinamik Ada / Kamera Çentiği -->
+                            <div class="w-7 h-1.5 bg-black rounded-full"></div>
+                            <!-- Ekran İçi Marka İkonu -->
+                            <div class="text-center">
+                                <span class="text-[10px] font-bold tracking-widest text-white/40 uppercase block">${phone.brand}</span>
+                                <i data-lucide="smartphone" class="w-6 h-6 text-white/70 mx-auto mt-1"></i>
+                            </div>
+                            <div class="w-8 h-1 bg-white/30 rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-2">${phone.brand}</span>
+                    <h3 class="text-base sm:text-xl font-extrabold text-slate-900 leading-snug mt-0.5">${phone.name}</h3>
+                    
+                    <div class="mt-3 pt-3 border-t border-slate-100 w-full">
+                        <span class="text-[11px] text-slate-400 block">Tahmini Piyasa Fiyatı</span>
+                        <span class="text-base sm:text-lg font-bold text-slate-800">${formatPrice(phone.priceTL)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Detaylı Teknik Karşılaştırma Satırlarını Oluştur
+        function renderComparisonRows(results) {
+            const container = document.getElementById('comparison-rows');
+
+            container.innerHTML = results.map(({ cat, spec1, spec2, winner }) => {
+                const p1Win = winner === 'p1';
+                const p2Win = winner === 'p2';
+
+                return `
+                    <div class="p-4 sm:p-5 hover:bg-slate-50/70 transition-colors">
+                        <!-- Kategori Başlığı -->
+                        <div class="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                            <i data-lucide="${cat.icon}" class="w-4 h-4 text-blue-600"></i>
+                            <span>${cat.label}</span>
+                        </div>
+
+                        <!-- İki Sütunlu Değer Karşılaştırması -->
+                        <div class="grid grid-cols-2 gap-3 sm:gap-6 items-stretch">
+                            
+                            <!-- 1. Telefon Özelliği -->
+                            <div class="rounded-xl p-3 sm:p-4 border transition-all flex flex-col justify-between ${
+                                p1Win 
+                                ? 'bg-emerald-50/70 border-emerald-300 text-emerald-950' 
+                                : 'bg-white border-slate-200/80 text-slate-800'
+                            }">
+                                <div>
+                                    <div class="flex items-start justify-between gap-2">
+                                        <span class="text-sm sm:text-base font-bold leading-snug ${p1Win ? 'text-emerald-800' : 'text-slate-900'}">
+                                            ${spec1.text}
+                                        </span>
+                                        ${p1Win ? `
+                                            <span class="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500 text-white shadow-sm">
+                                                <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+                                                <span class="hidden sm:inline">Daha İyi</span>
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                    <p class="text-xs mt-1 ${p1Win ? 'text-emerald-700/90 font-medium' : 'text-slate-500'}">
+                                        ${spec1.sub}
+                                    </p>
+                                </div>
+                                ${cat.formatMetric ? `
+                                    <div class="mt-2.5 pt-2 border-t ${p1Win ? 'border-emerald-200/70 text-emerald-700' : 'border-slate-100 text-slate-400'} text-[11px] font-semibold">
+                                        ${cat.formatMetric(spec1)}
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- 2. Telefon Özelliği -->
+                            <div class="rounded-xl p-3 sm:p-4 border transition-all flex flex-col justify-between ${
+                                p2Win 
+                                ? 'bg-emerald-50/70 border-emerald-300 text-emerald-950' 
+                                : 'bg-white border-slate-200/80 text-slate-800'
+                            }">
+                                <div>
+                                    <div class="flex items-start justify-between gap-2">
+                                        <span class="text-sm sm:text-base font-bold leading-snug ${p2Win ? 'text-emerald-800' : 'text-slate-900'}">
+                                            ${spec2.text}
+                                        </span>
+                                        ${p2Win ? `
+                                            <span class="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500 text-white shadow-sm">
+                                                <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+                                                <span class="hidden sm:inline">Daha İyi</span>
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                    <p class="text-xs mt-1 ${p2Win ? 'text-emerald-700/90 font-medium' : 'text-slate-500'}">
+                                        ${spec2.sub}
+                                    </p>
+                                </div>
+                                ${cat.formatMetric ? `
+                                    <div class="mt-2.5 pt-2 border-t ${p2Win ? 'border-emerald-200/70 text-emerald-700' : 'border-slate-100 text-slate-400'} text-[11px] font-semibold">
+                                        ${cat.formatMetric(spec2)}
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
 </script>
 </body>
 </html>
