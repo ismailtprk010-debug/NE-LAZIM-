@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NE LAZIM?</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#10131c;color:white}
+header{text-align:center;padding:35px 15px;background:#171d2b}
+h1{font-size:38px;color:#00d9ff;margin:0}
+header p{color:#ddd}
+main{max-width:900px;margin:auto;padding:20px}
+.card{background:#1c2435;padding:20px;border-radius:15px;margin:15px 0}
+h2{color:#00d9ff}
+input,select{width:100%;padding:13px;margin:8px 0;border:0;border-radius:8px;font-size:16px}
+button{background:#00bfe8;color:#07111a;padding:13px;border:0;border-radius:8px;font-weight:bold;width:100%;font-size:16px}
+.result{color:#00e6a0;font-size:20px;margin-top:12px}
+footer{text-align:center;padding:25px;color:#aaa}
+</style>
+</head>
+<body>
+
+<header>
+<h1>NE LAZIM?</h1>
+<p>Aradığın her şey bir tık uzağında!</p>
+</header>
+
+<main>
+
+<div class="card">
+<h2>Yüzde Hesaplama</h2>
+<input id="sayi" type="number" placeholder="Sayı">
+<input id="yuzde" type="number" placeholder="Yüzde">
+<button onclick="yuzdeHesapla()">Hesapla</button>
+<div class="result" id="sonuc"></div>
+</div>
+
+<div class="card">
+<h2>İndirim Hesaplama</h2>
+<input id="fiyat" type="number" placeholder="Ürün fiyatı (TL)">
+<input id="indirim" type="number" placeholder="İndirim oranı (%)">
+<button onclick="indirimHesapla()">Hesapla</button>
+<div class="result" id="indirimSonuc"></div>
+</div>
+
+<div class="card">
+<h2>Bütçene Uygun Telefon Bul</h2>
+<input id="telefonButce" type="number" placeholder="Bütçen (TL)">
+<button onclick="telefonBul()">Telefon Öner</button>
+<div class="result" id="telefonSonuc"></div>
+</div>
+
+<div class="card">
+<h2>Bütçene Uygun Araba Bul</h2>
+<input id="arabaButce" type="number" placeholder="Bütçen (TL)">
+<button onclick="arabaBul()">Araba Öner</button>
+<div class="result" id="arabaSonuc"></div>
+</div>
+
+<div class="card">
+<h2>Telefon Karşılaştırma</h2>
+<input id="telefon1" placeholder="Birinci telefon">
+<input id="telefon2" placeholder="İkinci telefon">
+<button onclick="karsilastir()">Karşılaştır</button>
+<div class="result" id="karsilastirmaSonuc"></div>
+</div>
+
+</main>
+
+<footer>NE LAZIM? © 2026</footer>
+
+<script>
+function yuzdeHesapla(){
+let a=Number(document.getElementById('sayi').value);
+let b=Number(document.getElementById('yuzde').value);
+document.getElementById('sonuc').innerText=
+a*(b/100)+"";
+}
+function indirimHesapla(){
+let a=Number(document.getElementById('fiyat').value);
+let b=Number(document.getElementById('indirim').value);
+document.getElementById('indirimSonuc').innerText=
+"İndirimli fiyat: "+(a-a*b/100)+" TL";
+}
+function telefonBul(){
+let b=Number(document.getElementById('telefonButce').value);
+let t=b<5000?"İkinci el giriş seviyesi telefonlara bakabilirsin.":
+b<10000?"Redmi Note ve Samsung Galaxy A serilerini inceleyebilirsin.":
+"Redmi Note Pro ve Samsung Galaxy A serilerini inceleyebilirsin.";
+document.getElementById('telefonSonuc').innerText=t;
+}
+function arabaBul(){
+let b=Number(document.getElementById('arabaButce').value);
+let t=b<300000?"Bütçene uygun araç bulmak zor olabilir.":
+b<600000?"Eski model Fiat, Renault ve Tofaş ilanlarını inceleyebilirsin.":
+"Renault, Fiat, Opel ve Hyundai ilanlarını inceleyebilirsin.";
+document.getElementById('arabaSonuc').innerText=t;
+}
+function karsilastir(){
+let a=document.getElementById('telefon1').value;
+let b=document.getElementById('telefon2').value;
+document.getElementById('karsilastirmaSonuc').innerText=
+a+" ve "+b+" modellerini teknik özelliklerine göre karşılaştırmalısın.";
+}
+</script>
+</body>
+</html>
+initial
