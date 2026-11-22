@@ -99,68 +99,127 @@ b<600000?"Eski model Fiat, Renault ve Tofaş ilanlarını inceleyebilirsin.":
 document.getElementById('arabaSonuc').innerText=t;
 }
 
+
+function sayiBul(deger, desen) {
+  const eslesme = String(deger || "").match(desen);
+  return eslesme ? Number(eslesme[1]) : null;
+}
+
+function degerBul(telefon, alan, desen) {
+  return sayiBul(telefon[alan], desen);
+}
+
 function karsilastir() {
-    const a = document.getElementById('telefon1').value.trim().toLowerCase();
-    const b = document.getElementById('telefon2').value.trim().toLowerCase();
+  const t1 = telefonlar.find(t => t.model === secim1.value);
+  const t2 = telefonlar.find(t => t.model === secim2.value);
 
-    const telefonlar = {
-        "iphone 11": ["LCD 6.1 inç", "A13 Bionic", "12 MP + 12 MP", "3110 mAh", "4 GB", "64/128/256 GB"],
-        "iphone 12": ["OLED 6.1 inç", "A14 Bionic", "12 MP + 12 MP", "2815 mAh", "4 GB", "64/128/256 GB"],
-        "iphone 13": ["OLED 6.1 inç", "A15 Bionic", "12 MP + 12 MP", "3227 mAh", "4 GB", "128/256/512 GB"],
+  if (!t1 || !t2) {
+    sonuc.innerHTML = "<p>İki telefon da seçmelisin.</p>";
+    return;
+  }
 
-        "samsung a15": ["Super AMOLED 6.5 inç", "Helio G99", "50 MP + 5 MP + 2 MP", "5000 mAh", "4/6/8 GB", "128/256 GB"],
-        "samsung a25": ["Super AMOLED 6.5 inç", "Exynos 1280", "50 MP + 8 MP + 2 MP", "5000 mAh", "6/8 GB", "128/256 GB"],
-        "samsung s23": ["Dynamic AMOLED 2X 6.1 inç", "Snapdragon 8 Gen 2", "50 MP + 12 MP + 10 MP", "3900 mAh", "8 GB", "128/256 GB"],
+  if (t1.model === t2.model) {
+    sonuc.innerHTML = "<p>İki farklı telefon seçmelisin.</p>";
+    return;
+  }
 
-        "redmi note 10": ["AMOLED 6.43 inç", "Snapdragon 678", "48 MP + 8 MP + 2 MP + 2 MP", "5000 mAh", "4/6 GB", "64/128 GB"],
-        "redmi note 14": ["AMOLED 6.67 inç", "Helio G99-Ultra", "108 MP + 2 MP + 2 MP", "5500 mAh", "6/8 GB", "128/256 GB"],
-        "redmi note 14 pro": ["AMOLED 6.67 inç", "Helio G100-Ultra", "200 MP + 8 MP + 2 MP", "5500 mAh", "8/12 GB", "256/512 GB"],
-        "redmi note 14 pro 5g": ["AMOLED 6.67 inç", "Dimensity 7300-Ultra", "200 MP + 8 MP + 2 MP", "5110 mAh", "8/12 GB", "256/512 GB"],
+  const kategoriler = [
+    {
+      ad: "RAM",
+      a: degerBul(t1, "ram", /(\d+)\s*GB/i),
+      b: degerBul(t2, "ram", /(\d+)\s*GB/i)
+    },
+    {
+      ad: "Kamera",
+      a: t1.kamera ? [...t1.kamera.matchAll(/(\d+)\s*MP/gi)]
+        .reduce((s, x) => s + Number(x[1]), 0) : null,
+      b: t2.kamera ? [...t2.kamera.matchAll(/(\d+)\s*MP/gi)]
+        .reduce((s, x) => s + Number(x[1]), 0) : null
+    },
+    {
+      ad: "Ekran yenileme hızı",
+      a: degerBul(t1, "ekran", /(\d+)\s*Hz/i),
+      b: degerBul(t2, "ekran", /(\d+)\s*Hz/i)
+    },
+    {
+      ad: "Batarya",
+      a: degerBul(t1, "batarya", /(\d+)\s*mAh/i),
+      b: degerBul(t2, "batarya", /(\d+)\s*mAh/i)
+    },
+    {
+      ad: "Depolama",
+      a: degerBul(t1, "depolama", /(\d+)\s*GB/i),
+      b: degerBul(t2, "depolama", /(\d+)\s*GB/i)
+    }
+  ];
 
-        "poco x6": ["AMOLED 6.67 inç", "Snapdragon 7s Gen 2", "64 MP + 8 MP + 2 MP", "5100 mAh", "8/12 GB", "256/512 GB"],
+  let puan1 = 0;
+  let puan2 = 0;
+  let karsilastirilan = 0;
+  let detay = "";
 
-        "realme c55": ["IPS LCD 6.72 inç", "Helio G88", "64 MP + 2 MP", "5000 mAh", "6/8 GB", "128/256 GB"],
-
-        "oppo a78": ["AMOLED 6.43 inç", "Snapdragon 680", "50 MP + 2 MP", "5000 mAh", "8 GB", "128/256 GB"]
-    };
-
-    const t1 = telefonlar[a];
-    const t2 = telefonlar[b];
-    const sonuc = document.getElementById('karsilastirmaSonuc');
-
-    if (!t1 || !t2) {
-        sonuc.innerHTML = "Bu model henüz telefon listemizde bulunmuyor. Desteklenen model adlarını kontrol edin.";
-        return;
+  kategoriler.forEach(k => {
+    if (k.a === null || k.b === null) {
+      detay += `<tr><td>${k.ad}</td><td colspan="2">Yeterli veri yok</td></tr>`;
+      return;
     }
 
-    const ozellikler = [
-        "Ekran", "İşlemci", "Arka kamera",
-        "Batarya", "RAM", "Depolama"
-    ];
+    karsilastirilan++;
 
-    let html = `
-    <div style="background:#171717;color:white;padding:18px;border-radius:15px;margin-top:15px">
-    <h3 style="text-align:center;color:#ff4545">TELEFON KARŞILAŞTIRMASI</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center">
-    <div style="background:#292929;padding:12px;border-radius:10px">${a.toUpperCase()}</div>
-    <div style="background:#292929;padding:12px;border-radius:10px">${b.toUpperCase()}</div>
+    let sonucMetni = "Berabere";
+    if (k.a > k.b) {
+      puan1++;
+      sonucMetni = t1.model + " önde";
+    } else if (k.b > k.a) {
+      puan2++;
+      sonucMetni = t2.model + " önde";
+    }
+
+    detay += `<tr><td>${k.ad}</td><td>${k.a}</td><td>${k.b}</td></tr>`;
+  });
+
+  const toplam = puan1 + puan2;
+  const skor1 = toplam ? Math.round(puan1 / toplam * 100) : 0;
+  const skor2 = toplam ? 100 - skor1 : 0;
+
+  let kazanan = "Berabere";
+  let aciklama = "Karşılaştırılabilen özelliklerde eşit sonuç çıktı.";
+
+  if (puan1 > puan2) {
+    kazanan = t1.model;
+    aciklama = "Karşılaştırılabilen özelliklerde daha fazla kategoride önde.";
+  } else if (puan2 > puan1) {
+    kazanan = t2.model;
+    aciklama = "Karşılaştırılabilen özelliklerde daha fazla kategoride önde.";
+  }
+
+  sonuc.innerHTML = `
+    <h3>🏆 Sistem değerlendirmesi</h3>
+    <h2>${kazanan}</h2>
+    <p>${aciklama}</p>
+
+    <div style="display:flex;gap:15px;flex-wrap:wrap">
+      <div><b>${t1.model}</b><h2>${skor1}/100</h2></div>
+      <div><b>${t2.model}</b><h2>${skor2}/100</h2></div>
     </div>
-    `;
 
-    ozellikler.forEach((ozellik, i) => {
-        html += `
-        <div style="padding:12px;border-bottom:1px solid #444">
-        <b style="color:#ff4545">${ozellik}</b>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
-        <span>${t1[i]}</span>
-        <span>${t2[i]}</span>
-        </div>
-        </div>`;
-    });
+    <p>Değerlendirilen kategori: ${karsilastirilan}/5</p>
 
-    html += `</div>`;
-    sonuc.innerHTML = html;
+    <h3>Özellik karşılaştırması</h3>
+    <table>
+      <tr><th>Özellik</th><th>${t1.model}</th><th>${t2.model}</th></tr>
+      ${detay}
+    </table>
+
+    <p style="font-size:12px;color:#aaa">
+      Puanlar yalnızca karşılaştırılabilir sayısal özelliklere göre hesaplanır.
+      Kamera megapiksel toplamı tek başına fotoğraf kalitesini göstermez.
+      İşlemci performansı ve gerçek kamera kalitesi bu puana dahil değildir.
+      Eksik bilgiler tahmin edilmez.
+    </p>
+  `;
 }
+
 
 
     
