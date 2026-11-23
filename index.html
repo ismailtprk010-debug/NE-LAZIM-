@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ne Lazım? - Akıllı Karşılaştırma Portalı</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19; --card-bg: #131b2e; --text-main: #f8fafc;
+            --text-muted: #94a3b8; --accent: #3b82f6; --border-color: #1e293b;
+            --win-bg: rgba(34, 197, 94, 0.15); --win-text: #4ade80; --gold-color: #fbbf24;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 40px; }
+        header { background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+        .logo span { color: var(--text-main); }
+        .nav-container { background: var(--card-bg); border-bottom: 1px solid var(--border-color); display: flex; gap: 6px; padding: 0.5rem; overflow-x: auto; }
+        .nav-tab { background: transparent; border: none; color: var(--text-muted); padding: 8px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 6px; white-space: nowrap; }
+        .nav-tab.active, .nav-tab:hover { background: var(--accent); color: #fff; }
+        .container { max-width: 900px; margin: 1.2rem auto; padding: 0 1rem; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.1rem; margin-bottom: 1rem; }
+        .panel-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--accent); }
+        input, select { width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 0.85rem; margin-bottom: 0.4rem; outline: none; }
+        .action-btn { background: var(--accent); color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .compare-table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
+        .compare-table th, .compare-table td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
+        .compare-table th { background: rgba(59, 130, 246, 0.08); }
+        .spec-label { font-weight: 600; color: var(--text-muted); background: rgba(0,0,0,0.02); }
+        .winner { background: var(--win-bg); color: var(--win-text); font-weight: 700; }
+        .result-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.8rem; margin-top: 0.8rem; }
+        .item-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.8rem; }
+        .item-card h4 { color: var(--accent); font-size: 0.9rem; margin-bottom: 0.2rem; }
+        .gold-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; }
+        .gold-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.8rem; text-align: center; border-top: 3px solid var(--gold-color); }
+        .gold-price { font-size: 1.1rem; font-weight: 800; color: var(--gold-color); margin-top: 0.3rem; }
+        @media(max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Ne<span>Lazım?</span></div>
+</header>
+
+<div class="nav-container">
+    <button class="nav-tab active" onclick="switchTab('compare', event)">📱 Telefon Karşılaştır</button>
+    <button class="nav-tab" onclick="switchTab('budgetPhone', event)">💵 Bütçe Telefon</button>
+    <button class="nav-tab" onclick="switchTab('budgetCar', event)">🚗 Bütçe Araç</button>
+    <button class="nav-tab" onclick="switchTab('gold', event)">🪙 Altın Fiyatları</button>
+</div>
+
+<div class="container">
+    <!-- 1. TELEFON KARŞILAŞTIRMA -->
+    <div id="tab-compare" class="tab-content active">
+        <div class="grid-2" style="margin-bottom: 1rem;">
+            <div class="panel" style="margin-bottom:0;">
+                <div class="panel-title">1. Telefon</div>
+                <select id="select-1" onchange="comparePhones()"></select>
+            </div>
+            <div class="panel" style="margin-bottom:0;">
+                <div class="panel-title">2. Telefon</div>
+                <select id="select-2" onchange="comparePhones()"></select>
+            </div>
+        </div>
+        <table class="compare-table">
+            <thead>
+                <tr>
+                    <th class="spec-label">Özellik</th>
+                    <th id="th-p1">1. Model</th>
+                    <th id="th-p2">2. Model</th>
+                </tr>
+            </thead>
+            <tbody id="compare-body"></tbody>
+        </table>
+    </div>
+
+    <!-- 2. BÜTÇEYE GÖRE TELEFON -->
+    <div id="tab-budgetPhone" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">Maksimum Bütçenizi Seçin</div>
+            <div class="grid-2">
+                <input type="number" id="max-phone-budget" value="45000">
+                <button class="action-btn" onclick="filterPhones()">Listele</button>
+            </div>
+        </div>
+        <div class="result-list" id="phone-results"></div>
+    </div>
+
+    <!-- 3. BÜTÇEYE GÖRE ARAÇ -->
+    <div id="tab-budgetCar" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">Maksimum Araç Bütçeniz (TL)</div>
+            <div class="grid-2">
+                <input type="number" id="max-car-budget" value="1000000">
+                <button class="action-btn" onclick="filterCars()">İlanları Göster</button>
+            </div>
+        </div>
+        <div class="result-list" id="car-results"></div>
+    </div>
+
+    <!-- 4. ALTIN FİYATLARI -->
+    <div id="tab-gold" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">Güncel Piyasa Altın Değerleri</div>
+            <div class="gold-grid">
+                <div class="gold-card"><div style="font-size:0.8rem; color:var(--text-muted)">Gram Altın</div><div class="gold-price">3.150,45 TL</div></div>
+                <div class="gold-card"><div style="font-size:0.8rem; color:var(--text-muted)">Çeyrek Altın</div><div class="gold-price">5.180,00 TL</div></div>
+                <div class="gold-card"><div style="font-size:0.8rem; color:var(--text-muted)">Yarım Altın</div><div class="gold-price">10.350,00 TL</div></div>
+                <div class="gold-card"><div style="font-size:0.8rem; color:var(--text-muted)">Tam Altın</div><div class="gold-price">20.650,00 TL</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const phones = [
+    { name: "iPhone 11", price: 23000, cpu: "A13 Bionic", ram: 4, battery: 3110 },
+    { name: "iPhone 13", price: 41000, cpu: "A15 Bionic", ram: 4, battery: 3227 },
+    { name: "iPhone 15", price: 58000, cpu: "A16 Bionic", ram: 6, battery: 3349 },
+    { name: "iPhone 16 Pro Max", price: 95000, cpu: "A18 Pro", ram: 8, battery: 4685 },
+    { name: "Galaxy S25 Ultra", price: 88000, cpu: "Snapdragon 8", ram: 12, battery: 5000 },
+    { name: "Galaxy A55", price: 21000, cpu: "Exynos 1480", ram: 8, battery: 5000 },
+    { name: "Redmi Note 14 Pro", price: 20000, cpu: "Dimensity 7300", ram: 8, battery: 5110 }
+];
+
+const cars = [
+    { title: "Fiat Egea 1.4 Easy", price: 620000, year: 2023, km: "30.000 km" },
+    { title: "Renault Clio 1.0 TCe", price: 720000, year: 2022, km: "45.000 km" },
+    { title: "Hyundai i20 1.4 Style", price: 780000, year: 2023, km: "20.000 km" },
+    { title: "Toyota Corolla 1.5 Vision", price: 950000, year: 2022, km: "60.000 km" },
+    { title: "TOGG T10X Uzun Menzil", price: 1450000, year: 2023, km: "15.000 km" }
+];
+
+function init() {
+    const s1 = document.getElementById("select-1");
+    const s2 = document.getElementById("select-2");
+    phones.forEach((p, i) => {
+        s1.add(new Option(`${p.name} (${p.price.toLocaleString()} TL)`, p.name));
+        s2.add(new Option(`${p.name} (${p.price.toLocaleString()} TL)`, p.name));
+    });
+    s1.value = "iPhone 16 Pro Max";
+    s2.value = "Galaxy S25 Ultra";
+    comparePhones();
+    filterPhones();
+    filterCars();
+}
+
+function switchTab(id, e) {
+    document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".nav-tab").forEach(el => el.classList.remove("active"));
+    document.getElementById("tab-" + id).classList.add("active");
+    e.currentTarget.classList.add("active");
+}
+
+function comparePhones() {
+    const p1 = phones.find(p => p.name === document.getElementById("select-1").value);
+    const p2 = phones.find(p => p.name === document.getElementById("select-2").value);
+    if (!p1 || !p2) return;
+
+    document.getElementById("th-p1").textContent = p1.name;
+    document.getElementById("th-p2").textContent = p2.name;
+
+    const rows = [
+        { label: "Fiyat", v1: p1.price + " TL", v2: p2.price + " TL", win: p1.price < p2.price ? 1 : 2 },
+        { label: "İşlemci", v1: p1.cpu, v2: p2.cpu, win: 0 },
+        { label: "RAM", v1: p1.ram + " GB", v2: p2.ram + " GB", win: p1.ram > p2.ram ? 1 : (p2.ram > p1.ram ? 2 : 0) },
+        { label: "Batarya", v1: p1.battery + " mAh", v2: p2.battery + " mAh", win: p1.battery > p2.battery ? 1 : (p2.battery > p1.battery ? 2 : 0) }
+    ];
+
+    const tbody = document.getElementById("compare-body");
+    tbody.innerHTML = "";
+    rows.forEach(r => {
+        tbody.innerHTML += `<tr>
+            <td class="spec-label">${r.label}</td>
+            <td class="${r.win === 1 ? 'winner' : ''}">${r.v1}</td>
+            <td class="${r.win === 2 ? 'winner' : ''}">${r.v2}</td>
+        </tr>`;
+    });
+}
+
+function filterPhones() {
+    const max = parseFloat(document.getElementById("max-phone-budget").value) || 999999;
+    const res = phones.filter(p => p.price <= max);
+    document.getElementById("phone-results").innerHTML = res.length ? res.map(p => `
+        <div class="item-card">
+            <h4>${p.name}</h4>
+            <p style="font-size:0.8rem; color:var(--text-muted)"><strong>${p.price.toLocaleString()} TL</strong> - ${p.ram}GB RAM</p>
+        </div>
+    `).join('') : '<p style="font-size:0.8rem; color:var(--text-muted)">Model bulunamadı.</p>';
+}
+
+function filterCars() {
+    const max = parseFloat(document.getElementById("max-car-budget").value) || 9999999;
+    const res = cars.filter(c => c.price <= max);
+    document.getElementById("car-results").innerHTML = res.length ? res.map(c => `
+        <div class="item-card">
+            <h4>${c.title}</h4>
+            <p style="font-size:0.8rem; color:var(--text-muted)"><strong>${c.price.toLocaleString()} TL</strong> | ${c.year} (${c.km})</p>
+        </div>
+    `).join('') : '<p style="font-size:0.8rem; color:var(--text-muted)">İlan bulunamadı.</p>';
+}
+
+init();
+</script>
+</body>
+</html>
