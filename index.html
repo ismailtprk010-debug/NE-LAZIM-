@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ne Lazım? - Karşılaştırma, Bütçe ve Altın Portalı</title>
+    <style>
+        :root {
+            --bg: #0b0f19; --card: #131b2e; --text: #f8fafc;
+            --muted: #94a3b8; --accent: #3b82f6; --border: #1e293b;
+            --win-bg: rgba(34, 197, 94, 0.15); --win-text: #4ade80; --gold: #fbbf24;
+        }
+        [data-theme="light"] {
+            --bg: #f8fafc; --card: #ffffff; --text: #0f172a;
+            --muted: #64748b; --accent: #2563eb; --border: #e2e8f0;
+            --win-bg: rgba(22, 163, 74, 0.1); --win-text: #16a34a; --gold: #d97706;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
+        header { background: var(--card); border-bottom: 1px solid var(--border); padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+        .logo span { color: var(--text); }
+        .theme-btn { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        .nav { background: var(--card); border-bottom: 1px solid var(--border); display: flex; gap: 6px; padding: 0.5rem 1rem; overflow-x: auto; }
+        .nav-tab { background: transparent; border: none; color: var(--muted); padding: 8px 14px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 6px; white-space: nowrap; }
+        .nav-tab.active, .nav-tab:hover { background: var(--accent); color: #fff; }
+        .container { max-width: 980px; margin: 1.2rem auto; padding: 0 1rem; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; margin-bottom: 1rem; }
+        .panel-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.7rem; color: var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .badge-count { background: rgba(59,130,246,0.15); color: var(--accent); padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; }
+        input, select { width: 100%; padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.85rem; margin-bottom: 0.5rem; outline: none; }
+        .btn { background: var(--accent); color: #fff; border: none; padding: 0.65rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-gold { background: var(--gold); color: #0f172a; font-weight: 700; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; }
+        .summary { background: var(--card); border: 1px solid var(--accent); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; text-align: center; }
+        .scores { display: flex; justify-content: space-around; align-items: center; margin-top: 0.5rem; }
+        .score-val { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+        th, td { padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        th { background: rgba(59, 130, 246, 0.08); }
+        .spec { font-weight: 600; color: var(--muted); width: 26%; }
+        .winner { background: var(--win-bg); color: var(--win-text); font-weight: 700; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.8rem; margin-top: 0.8rem; }
+        .card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; }
+        .card h4 { color: var(--accent); font-size: 0.9rem; margin-bottom: 0.25rem; }
+        .card p { font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+        .gold-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.8rem; }
+        .gold-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; border-top: 3px solid var(--gold); }
+        .gold-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.6rem; color: var(--text); }
+        .gold-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-top: 0.3rem; }
+        .gold-buy { color: var(--muted); }
+        .gold-sell { font-weight: 800; color: var(--gold); }
+        .edit-box { border-top: 1px solid var(--border); margin-top: 1rem; padding-top: 1rem; display: none; }
+        @media(max-width: 650px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Ne<span>Lazım?</span></div>
+    <button class="theme-btn" onclick="document.body.setAttribute('data-theme', document.body.getAttribute('data-theme')==='light'?'dark':'light')">Tema Değiştir</button>
+</header>
+
+<div class="nav">
+    <button class="nav-tab active" onclick="openTab('compare', this)">📱 Telefon Karşılaştır</button>
+    <button class="nav-tab" onclick="openTab('bPhone', this)">💵 Bütçe Telefon</button>
+    <button class="nav-tab" onclick="openTab('bCar', this)">🚗 Bütçe Araba</button>
+    <button class="nav-tab" onclick="openTab('gold', this)">🪙 Altın Fiyatları</button>
+    <button class="nav-tab" onclick="openTab('calc', this)">🧮 Hesaplama</button>
+</div>
+
+<div class="container">
+    <!-- 1. TELEFON KARŞILAŞTIR -->
+    <div id="tab-compare" class="tab-content active">
+        <div class="grid-2">
+            <div class="panel">
+                <div class="panel-title">1. Telefon <span class="badge-count" id="c1-count"></span></div>
+                <input type="text" id="q1" placeholder="Marka veya model ara..." oninput="filterSel(1)">
+                <select id="s1" onchange="runCompare()"></select>
+            </div>
+            <div class="panel">
+                <div class="panel-title">2. Telefon <span class="badge-count" id="c2-count"></span></div>
+                <input type="text" id="q2" placeholder="Marka veya model ara..." oninput="filterSel(2)">
+                <select id="s2" onchange="runCompare()"></select>
+            </div>
+        </div>
+        <div class="summary" id="sum-box"></div>
+        <table>
+            <thead><tr><th class="spec">Özellik</th><th id="th1">1. Telefon</th><th id="th2">2. Telefon</th></tr></thead>
+            <tbody id="cmp-body"></tbody>
+        </table>
+    </div>
+
+    <!-- 2. BÜTÇE TELEFON -->
+    <div id="tab-bPhone" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">Bütçeye Göre Telefon Bul <span class="badge-count" id="bp-count"></span></div>
+            <div class="grid-3">
+                <input type="number" id="bp-max" value="60000" placeholder="Maksimum Bütçe (TL)">
+                <input type="text" id="bp-brand" placeholder="Marka filtrele (örn: Apple, Samsung)...">
+                <button class="btn" onclick="runBudgetPhone()">Modelleri Listele</button>
+            </div>
+        </div>
+        <div class="cards" id="bp-list"></div>
+    </div>
+
+    <!-- 3. BÜTÇE ARABA -->
+    <div id="tab-bCar" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">Bütçeye Göre Araba Bul <span class="badge-count" id="bc-count"></span></div>
+            <div class="grid-3">
+                <input type="number" id="bc-max" value="2000000" placeholder="Maksimum Bütçe (TL)">
+                <input type="text" id="bc-brand" placeholder="Marka/model ara (örn: Fiat, BMW, TOGG)...">
+                <button class="btn" onclick="runBudgetCar()">Araçları Listele</button>
+            </div>
+        </div>
+        <div class="cards" id="bc-list"></div>
+    </div>
+
+    <!-- 4. ALTIN FİYATLARI -->
+    <div id="tab-gold" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">
+                <span>Güncel Altın Alış / Satış Fiyatları</span>
+                <button class="theme-btn" onclick="toggleGoldEdit()">✏️ Fiyatları Düzenle</button>
+            </div>
+            <div class="gold-grid" id="gold-list"></div>
+
+            <!-- Hızlı Altın Güncelleme Paneli -->
+            <div class="edit-box" id="gold-edit-panel">
+                <p style="font-size:0.8rem; color:var(--muted); margin-bottom:0.8rem;">Güncel fiyatları girip kaydettiğinizde tarayıcınızda saklanır:</p>
+                <div id="gold-inputs" class="grid-2"></div>
+                <div class="grid-2" style="margin-top:0.5rem;">
+                    <button class="btn btn-gold" onclick="saveGoldPrices()">💾 Fiyatları Kaydet</button>
+                    <button class="theme-btn" style="width:100%; padding:0.65rem;" onclick="resetGoldPrices()">Varsayılana Dön</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. HESAPLAMA -->
+    <div id="tab-calc" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">İndirim Hesaplayıcı</div>
+            <div class="grid-3">
+                <input type="number" id="d-price" value="10000" placeholder="Fiyat (TL)">
+                <input type="number" id="d-rate" value="25" placeholder="İndirim (%)">
+                <button class="btn" onclick="doDiscount()">Hesapla</button>
+            </div>
+            <p id="d-res" style="margin-top:0.6rem; color:var(--win-text); font-weight:700; font-size:0.9rem;"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+const defaultGold = [
+    { name: "Gram Altın (24 Ayar)", buy: "6.061 TL", sell: "6.254 TL" },
+    { name: "Çeyrek Altın", buy: "9.805 TL", sell: "10.242 TL" },
+    { name: "Yarım Altın", buy: "19.849 TL", sell: "20.022 TL" },
+    { name: "Tam Altın", buy: "39.423 TL", sell: "39.896 TL" },
+    { name: "Cumhuriyet Altını", buy: "40.124 TL", sell: "40.570 TL" },
+    { name: "22 Ayar Bilezik (Gram)", buy: "5.543 TL", sell: "5.777 TL" }
+];
+
+let goldData = JSON.parse(localStorage.getItem("nelazim_gold")) || defaultGold;
+
+const rawPhones = [
+    ["Apple","iPhone 11",24500,"A13 Bionic",72,4,64,60,3110,18,"12MP Çift",74],
+    ["Apple","iPhone 11 Pro",30000,"A13 Bionic",73,4,64,60,3046,18,"12MP Üçlü",78],
+    ["Apple","iPhone 11 Pro Max",35000,"A13 Bionic",73,4,64,60,3969,18,"12MP Üçlü",80],
+    ["Apple","iPhone 12 mini",27000,"A14 Bionic",78,4,64,60,2227,20,"12MP Çift",78],
+    ["Apple","iPhone 12",32500,"A14 Bionic",78,4,128,60,2815,20,"12MP Çift",79],
+    ["Apple","iPhone 12 Pro",39000,"A14 Bionic",79,6,128,60,2815,20,"12MP Üçlü",83],
+    ["Apple","iPhone 12 Pro Max",44500,"A14 Bionic",79,6,128,60,3687,20,"12MP Üçlü",86],
+    ["Apple","iPhone 13 mini",34000,"A15 Bionic",84,4,128,60,2406,20,"12MP Çift",82],
+    ["Apple","iPhone 13",41500,"A15 Bionic",84,4,128,60,3227,20,"12MP Çift",83],
+    ["Apple","iPhone 13 Pro",51000,"A15 Bionic",85,6,128,120,3095,23,"12MP Üçlü",89],
+    ["Apple","iPhone 13 Pro Max",58000,"A15 Bionic",85,6,128,120,4352,27,"12MP Üçlü",91],
+    ["Apple","iPhone 14",49500,"A15 Bionic",84,6,128,60,3279,20,"12MP Çift",85],
+    ["Apple","iPhone 14 Plus",55500,"A15 Bionic",84,6,128,60,4325,20,"12MP Çift",86],
+    ["Apple","iPhone 14 Pro",64000,"A16 Bionic",89,6,128,120,3200,27,"48MP Üçlü",93],
+    ["Apple","iPhone 14 Pro Max",72000,"A16 Bionic",89,6,128,120,4323,27,"48MP Üçlü",95],
+    ["Apple","iPhone 15",59000,"A16 Bionic",89,6,128,60,3349,27,"48MP Çift",89],
+    ["Apple","iPhone 15 Plus",66000,"A16 Bionic",89,6,128,60,4383,27,"48MP Çift",90],
+    ["Apple","iPhone 15 Pro",76000,"A17 Pro",95,8,128,120,3274,27,"48MP Üçlü",95],
+    ["Apple","iPhone 15 Pro Max",84000,"A17 Pro",95,8,256,120,4422,27,"48MP Üçlü",96],
+    ["Apple","iPhone 16",71000,"A18",94,8,128,60,3561,45,"48MP Çift",91],
+    ["Apple","iPhone 16 Plus",77500,"A18",94,8,128,60,4674,45,"48MP Çift",92],
+    ["Apple","iPhone 16 Pro",87000,"A18 Pro",99,8,128,120,3582,45,"48MP Üçlü",97],
+    ["Apple","iPhone 16 Pro Max",97000,"A18 Pro",99,8,256,120,4685,45,"48MP Üçlü",98],
+    ["Apple","iPhone 17",79000,"A19",97,8,256,120,3692,45,"48MP Çift",94],
+    ["Apple","iPhone 17 Pro",94000,"A19 Pro",100,12,256,120,4252,50,"48MP Üçlü",99],
+    ["Apple","iPhone 17 Pro Max",105000,"A19 Pro",100,12,256,120,5088,50,"48MP Üçlü",100],
+
+    ["Samsung","Galaxy S25 Ultra",91000,"Snapdragon 8 Elite",100,12,256,120,5000,45,"200MP Dörtlü",99],
+    ["Samsung","Galaxy S25+",76000,"Snapdragon 8 Elite",99,12,256,120,4900,45,"50MP Üçlü",93],
+    ["Samsung","Galaxy S25",65000,"Snapdragon 8 Elite",99,12,128,120,4000,25,"50MP Üçlü",92],
+    ["Samsung","Galaxy S24 Ultra",74000,"Snapdragon 8 Gen 3",96,12,256,120,5000,45,"200MP Dörtlü",97],
+    ["Samsung","Galaxy S24+",56000,"Exynos 2400",92,12,256,120,4900,45,"50MP Üçlü",91],
+    ["Samsung","Galaxy S24",47000,"Exynos 2400",92,8,128,120,4000,25,"50MP Üçlü",90],
+    ["Samsung","Galaxy S23 Ultra",59000,"Snapdragon 8 Gen 2",91,8,256,120,5000,45,"200MP Dörtlü",95],
+    ["Samsung","Galaxy S23",39000,"Snapdragon 8 Gen 2",91,8,128,120,3900,25,"50MP Üçlü",89],
+    ["Samsung","Galaxy A56",24500,"Exynos 1580",80,8,128,120,5000,45,"50MP OIS",83],
+    ["Samsung","Galaxy A55",21500,"Exynos 1480",76,8,128,120,5000,25,"50MP OIS",81],
+    ["Samsung","Galaxy A36",19500,"Snapdragon 6 Gen 3",74,8,128,120,5000,45,"50MP OIS",79],
+    ["Samsung","Galaxy A35",17500,"Exynos 1380",71,8,128,120,5000,25,"50MP OIS",77],
+    ["Samsung","Galaxy A25",14000,"Exynos 1280",67,6,128,120,5000,25,"50MP OIS",73],
+    ["Samsung","Galaxy A16",10800,"Helio G99",60,4,128,90,5000,25,"50MP Üçlü",68],
+    ["Samsung","Galaxy A15",9500,"Helio G99",60,4,128,90,5000,25,"50MP Üçlü",68],
+    ["Samsung","Galaxy M55",18500,"Snapdragon 7 Gen 1",75,8,128,120,5000,45,"50MP OIS",78],
+    ["Samsung","Galaxy M35",15500,"Exynos 1380",71,8,128,120,6000,25,"50MP OIS",76],
+
+    ["Xiaomi","Xiaomi 15 Ultra",89000,"Snapdragon 8 Elite",100,16,512,120,5410,90,"200MP Leica",100],
+    ["Xiaomi","Xiaomi 15",64000,"Snapdragon 8 Elite",99,12,256,120,5240,90,"50MP Leica",96],
+    ["Xiaomi","Xiaomi 14 Ultra",72000,"Snapdragon 8 Gen 3",96,16,512,120,5000,90,"50MP Leica",99],
+    ["Xiaomi","Xiaomi 14",51000,"Snapdragon 8 Gen 3",96,12,512,120,4610,90,"50MP Leica",94],
+    ["Xiaomi","Xiaomi 14T Pro",42000,"Dimensity 9300+",97,12,512,144,5000,120,"50MP Leica",92],
+    ["Xiaomi","Xiaomi 14T",33000,"Dimensity 8300-Ultra",88,12,256,144,5000,67,"50MP Leica",89],
+    ["Xiaomi","Xiaomi 13T Pro",36000,"Dimensity 9200+",93,12,512,144,5000,120,"50MP Leica",90],
+
+    ["Redmi","Redmi Note 14 Pro+",24500,"Snapdragon 7s Gen 3",81,12,512,120,5110,120,"200MP OIS",86],
+    ["Redmi","Redmi Note 14 Pro",20500,"Dimensity 7300-Ultra",78,8,256,120,5110,45,"200MP OIS",84],
+    ["Redmi","Redmi Note 14",12500,"Helio G99-Ultra",62,8,256,120,5500,33,"108MP",74],
+    ["Redmi","Redmi Note 13 Pro+",22000,"Dimensity 7200-Ultra",79,12,512,120,5000,120,"200MP OIS",85],
+    ["Redmi","Redmi Note 13 Pro",18500,"Snapdragon 7s Gen 2",75,8,256,120,5100,67,"200MP OIS",82],
+    ["Redmi","Redmi Note 13",11200,"Snapdragon 685",56,8,128,120,5000,33,"108MP",72],
+    ["Redmi","Redmi 14C",7600,"Helio G81-Ultra",48,4,128,120,5160,18,"50MP",60],
+
+    ["POCO","POCO F7 Ultra",48000,"Snapdragon 8 Elite",99,16,512,120,5300,120,"50MP OIS",91],
+    ["POCO","POCO F7 Pro",38000,"Snapdragon 8 Gen 3",96,12,512,120,6000,90,"50MP OIS",88],
+    ["POCO","POCO F6 Pro",31500,"Snapdragon 8 Gen 2",91,12,512,120,5000,120,"50MP OIS",85],
+    ["POCO","POCO F6",25500,"Snapdragon 8s Gen 3",91,12,512,120,5000,90,"50MP OIS",82],
+    ["POCO","POCO X7 Pro",24000,"Dimensity 8400-Ultra",92,12,512,120,6000,90,"50MP OIS",83],
+    ["POCO","POCO X6 Pro",22500,"Dimensity 8300-Ultra",88,12,512,120,5000,67,"64MP OIS",79],
+    ["POCO","POCO M6 Pro",13500,"Helio G99-Ultra",62,8,256,120,5000,67,"64MP OIS",74],
+
+    ["Honor","Honor Magic7 Pro",78000,"Snapdragon 8 Elite",100,16,512,120,5850,100,"200MP Periskop",98],
+    ["Honor","Honor Magic6 Pro",63000,"Snapdragon 8 Gen 3",96,12,512,120,5600,80,"180MP Periskop",96],
+    ["Honor","Honor 200 Pro",36000,"Snapdragon 8s Gen 3",91,12,512,120,5200,100,"50MP OIS",90],
+    ["Honor","Honor 200",26500,"Snapdragon 7 Gen 3",81,12,256,120,5200,100,"50MP OIS",86],
+    ["Honor","Honor X9b",16500,"Snapdragon 6 Gen 1",70,12,256,120,5800,35,"108MP",75],
+
+    ["Huawei","Huawei Pura 70 Ultra",69000,"Kirin 9010",87,16,512,120,5200,100,"50MP 1-inç",99],
+    ["Huawei","Huawei Pura 70 Pro",53000,"Kirin 9010",87,12,512,120,5050,100,"50MP XMAGE",95],
+    ["Huawei","Huawei Nova 13 Pro",29000,"Kirin 8000",77,12,512,120,5000,100,"50MP OIS",86],
+
+    ["realme","realme GT 7 Pro",55000,"Snapdragon 8 Elite",100,12,256,120,6500,120,"50MP Periskop",93],
+    ["realme","realme GT 6",35000,"Snapdragon 8s Gen 3",91,16,512,120,5500,120,"50MP OIS",89],
+    ["realme","realme 12 Pro+",23500,"Snapdragon 7s Gen 2",75,12,512,120,5000,67,"64MP Periskop",85],
+
+    ["vivo","vivo X200 Pro",79000,"Dimensity 9400",100,16,512,120,6000,90,"200MP ZEISS",99],
+    ["vivo","vivo V40",27500,"Snapdragon 7 Gen 3",81,12,256,120,5500,80,"50MP ZEISS",86],
+    ["vivo","vivo Y28",10500,"Helio G85",50,8,256,90,6000,44,"50MP",65],
+
+    ["Nothing","Nothing Phone (2)",29500,"Snapdragon 8+ Gen 1",87,12,256,120,4700,45,"50MP Çift",84],
+    ["Nothing","Nothing Phone (2a)",18000,"Dimensity 7200 Pro",77,8,128,120,5000,45,"50MP Çift",78],
+
+    ["Tecno","Tecno Camon 30 Pro",21000,"Dimensity 8200",83,12,512,144,5000,70,"50MP OIS",82],
+    ["Infinix","Infinix GT 20 Pro",19500,"Dimensity 8200 Ultimate",83,12,256,144,5000,45,"108MP OIS",77],
+    ["General Mobile","GM Phoenix 5G",13200,"Dimensity 7050",72,8,256,120,4700,66,"200MP",74],
+    ["Casper","Casper VIA X40",11000,"Helio G99",60,8,256,120,5000,33,"50MP",67]
+];
+
+const rawCars = [
+    ["Fiat","Egea Sedan 1.4 Fire Easy",940000,2024,"Benzin","Sedan"],
+    ["Fiat","Egea Sedan 1.6 Multijet Lounge",1280000,2024,"Dizel","Sedan"],
+    ["Fiat","Egea Cross 1.4 Fire Street",1030000,2024,"Benzin","SUV"],
+    ["Fiat","Egea Cross 1.5 T4 Hibrit",1460000,2024,"Hibrit","SUV"],
+    ["Fiat","500e La Prima",1390000,2024,"Elektrik","Hatchback"],
+    ["Fiat","Topolino",470000,2024,"Elektrik","Mikro"],
+
+    ["Renault","Clio 1.0 TCe Evolution",1120000,2024,"Benzin","Hatchback"],
+    ["Renault","Clio 1.6 E-Tech Hibrit",1490000,2024,"Hibrit","Hatchback"],
+    ["Renault","Megane Sedan 1.3 TCe Touch",1480000,2024,"Benzin","Sedan"],
+    ["Renault","Megane Sedan 1.5 dCi Icon",1720000,2024,"Dizel","Sedan"],
+    ["Renault","Austral Techno",1980000,2024,"Hibrit","SUV"],
+    ["Renault","Duster Mild Hybrid",1420000,2024,"Hibrit","SUV"],
+    ["Renault","Megane E-Tech Elektrik",1750000,2024,"Elektrik","SUV"],
+
+    ["Toyota","Corolla 1.5 Vision Plus",1380000,2024,"Benzin","Sedan"],
+    ["Toyota","Corolla 1.8 Hybrid",1840000,2024,"Hibrit","Sedan"],
+    ["Toyota","Corolla Cross Hybrid",2050000,2024,"Hibrit","SUV"],
+    ["Toyota","C-HR Hybrid",1890000,2024,"Hibrit","SUV"],
+    ["Toyota","Yaris Hybrid",1450000,2024,"Hibrit","Hatchback"],
+    ["Toyota","RAV4 Hybrid",3250000,2024,"Hibrit","SUV"],
+    ["Toyota","Hilux 4x4",2150000,2024,"Dizel","Pick-up"],
+
+    ["Volkswagen","Polo 1.0 TSI Life",1360000,2024,"Benzin","Hatchback"],
+    ["Volkswagen","Golf 1.5 eTSI Life",1740000,2024,"Hibrit","Hatchback"],
+    ["Volkswagen","Golf GTI",3450000,2024,"Benzin","Hatchback"],
+    ["Volkswagen","T-Cross Life",1590000,2024,"Benzin","SUV"],
+    ["Volkswagen","Taigo Style",1760000,2024,"Benzin","SUV"],
+    ["Volkswagen","T-Roc R-Line",2180000,2024,"Benzin","SUV"],
+    ["Volkswagen","Tiguan Elegance",2680000,2024,"Hibrit","SUV"],
+    ["Volkswagen","Passat Variant eTSI",2890000,2024,"Hibrit","Station"],
+    ["Volkswagen","ID.4 Elektrik",1870000,2024,"Elektrik","SUV"],
+
+    ["Hyundai","i10 Jump",910000,2024,"Benzin","Hatchback"],
+    ["Hyundai","i20 Style",1180000,2024,"Benzin","Hatchback"],
+    ["Hyundai","Bayon Elite",1340000,2024,"Benzin","SUV"],
+    ["Hyundai","Kona Prime",1880000,2024,"Benzin","SUV"],
+    ["Hyundai","Tucson Prime Plus",2190000,2024,"Benzin","SUV"],
+    ["Hyundai","Tucson Dizel Elite",2380000,2024,"Dizel","SUV"],
+    ["Hyundai","IONIQ 5",1890000,2024,"Elektrik","SUV"],
+    ["Hyundai","IONIQ 6",1940000,2024,"Elektrik","Sedan"],
+
+    ["Honda","City Executive",1260000,2024,"Benzin","Sedan"],
+    ["Honda","Civic Elegance+",1790000,2024,"Benzin","Sedan"],
+    ["Honda","Jazz Crosstar",1490000,2024,"Hibrit","Hatchback"],
+    ["Honda","HR-V Advance",1960000,2024,"Hibrit","SUV"],
+    ["Honda","ZR-V Hybrid",2690000,2024,"Hibrit","SUV"],
+    ["Honda","CR-V Hybrid",3350000,2024,"Hibrit","SUV"],
+
+    ["Ford","Puma Titanium",1480000,2024,"Hibrit","SUV"],
+    ["Ford","Focus Titanium",1690000,2024,"Dizel","Sedan"],
+    ["Ford","Kuga ST-Line",2190000,2024,"Benzin","SUV"],
+    ["Ford","Ranger Wildtrak",2650000,2024,"Dizel","Pick-up"],
+    ["Ford","Mustang Mach-E",2790000,2024,"Elektrik","SUV"],
+
+    ["Opel","Corsa Edition",1140000,2024,"Benzin","Hatchback"],
+    ["Opel","Corsa Elektrik",1440000,2024,"Elektrik","Hatchback"],
+    ["Opel","Astra GS",1640000,2024,"Benzin","Hatchback"],
+    ["Opel","Mokka GS",1680000,2024,"Benzin","SUV"],
+    ["Opel","Grandland Hybrid",2150000,2024,"Hibrit","SUV"],
+
+    ["Peugeot","208 Allure",1320000,2024,"Benzin","Hatchback"],
+    ["Peugeot","2008 GT",1780000,2024,"Benzin","SUV"],
+    ["Peugeot","E-2008 GT",1690000,2024,"Elektrik","SUV"],
+    ["Peugeot","308 GT",1760000,2024,"Benzin","Hatchback"],
+    ["Peugeot","408 GT",2090000,2024,"Benzin","SUV"],
+    ["Peugeot","3008 Hybrid",2250000,2024,"Hibrit","SUV"],
+
+    ["Citroen","Ami Elektrik",445000,2024,"Elektrik","Mikro"],
+    ["Citroen","C3 Feel Bold",1020000,2024,"Benzin","Hatchback"],
+    ["Citroen","C4 Shine",1540000,2024,"Benzin","SUV"],
+    ["Citroen","C5 Aircross",2080000,2024,"Dizel","SUV"],
+
+    ["Dacia","Sandero Stepway",1130000,2024,"Benzin","SUV"],
+    ["Dacia","Jogger Extreme",1340000,2024,"Benzin","Station"],
+    ["Dacia","Spring Elektrik",920000,2024,"Elektrik","SUV"],
+
+    ["Skoda","Fabia Monte Carlo",1390000,2024,"Benzin","Hatchback"],
+    ["Skoda","Scala Premium",1590000,2024,"Benzin","Hatchback"],
+    ["Skoda","Kamiq Elite",1680000,2024,"Benzin","SUV"],
+    ["Skoda","Octavia e-Tec",1890000,2024,"Hibrit","Sedan"],
+    ["Skoda","Kodiaq Prestige",2790000,2024,"Hibrit","SUV"],
+    ["Skoda","Superb Prestige",2750000,2024,"Hibrit","Sedan"],
+
+    ["Seat","Ibiza Style",1290000,2024,"Benzin","Hatchback"],
+    ["Seat","Arona FR",1490000,2024,"Benzin","SUV"],
+    ["Seat","Leon eTSI FR",1760000,2024,"Hibrit","Hatchback"],
+    ["Cupra","Formentor",2290000,2024,"Hibrit","SUV"],
+
+    ["Nissan","Juke Tekna",1590000,2024,"Benzin","SUV"],
+    ["Nissan","Qashqai Skypack",1980000,2024,"Hibrit","SUV"],
+    ["Nissan","Qashqai e-POWER",2390000,2024,"Hibrit","SUV"],
+    ["Nissan","X-Trail e-POWER",3150000,2024,"Hibrit","SUV"],
+
+    ["Kia","Picanto Feel",940000,2024,"Benzin","Hatchback"],
+    ["Kia","Stonic Prestige",1360000,2024,"Benzin","SUV"],
+    ["Kia","Sportage Prestige",2190000,2024,"Hibrit","SUV"],
+    ["Kia","EV6 Elektrik",2350000,2024,"Elektrik","SUV"],
+
+    ["TOGG","T10X Standart Menzil",1440000,2024,"Elektrik","SUV"],
+    ["TOGG","T10X Uzun Menzil",1830000,2024,"Elektrik","SUV"],
+    ["Tesla","Model Y Standart",1866000,2024,"Elektrik","SUV"],
+    ["Tesla","Model Y Long Range",2950000,2024,"Elektrik","SUV"],
+    ["BYD","Dolphin",1285000,2024,"Elektrik","Hatchback"],
+    ["BYD","Atto 3",1495000,2024,"Elektrik","SUV"],
+    ["BYD","Seal U DM-i",1850000,2024,"Hibrit","SUV"],
+    ["Chery","Omoda 5 Pro",1650000,2024,"Benzin","SUV"],
+    ["Chery","Tiggo 7 Pro Max",1790000,2024,"Benzin","SUV"],
+    ["Chery","Tiggo 8 Pro Max",1990000,2024,"Benzin","SUV"],
+    ["MG","MG4 Elektrik",1380000,2024,"Elektrik","Hatchback"],
+    ["MG","HS Luxury",1690000,2024,"Benzin","SUV"],
+
+    ["Mercedes-Benz","A 200 AMG",2590000,2024,"Hibrit","Hatchback"],
+    ["Mercedes-Benz","C 200 4MATIC",3750000,2024,"Hibrit","Sedan"],
+    ["Mercedes-Benz","E 180 Exclusive",4890000,2024,"Hibrit","Sedan"],
+    ["Mercedes-Benz","GLA 200 AMG",2980000,2024,"Hibrit","SUV"],
+    ["BMW","120 M Sport",2490000,2024,"Hibrit","Hatchback"],
+    ["BMW","320i M Sport",3590000,2024,"Benzin","Sedan"],
+    ["BMW","X1 M Sport",2890000,2024,"Hibrit","SUV"],
+    ["Audi","A3 Sportback",2390000,2024,"Hibrit","Hatchback"],
+    ["Audi","Q3 S Line",2890000,2024,"Benzin","SUV"],
+    ["Volvo","EX30 Elektrik",1980000,2024,"Elektrik","SUV"],
+    ["Volvo","XC40 Recharge",2690000,2024,"Elektrik","SUV"]
+];
+
+const phones = rawPhones.map(p => ({
+    brand: p[0], name: p[1], price: p[2], cpu: p[3], cpuScore: p[4],
+    ram: p[5], storage: p[6], hz: p[7], battery: p[8], charge: p[9],
+    cam: p[10], camScore: p[11]
+}));
+
+const cars = rawCars.map(c => ({
+    brand: c[0], model: c[1], price: c[2], year: c[3], fuel: c[4], body: c[5]
+}));
+
+function renderGold() {
+    document.getElementById("gold-list").innerHTML = goldData.map(g => `
+        <div class="gold-card">
+            <div class="gold-name">${g.name}</div>
+            <div class="gold-row"><span class="gold-buy">Alış:</span><strong>${g.buy}</strong></div>
+            <div class="gold-row"><span class="gold-buy">Satış:</span><span class="gold-sell">${g.sell}</span></div>
+        </div>
+    `).join("");
+
+    document.getElementById("gold-inputs").innerHTML = goldData.map((g, idx) => `
+        <div style="background:var(--bg); padding:0.6rem; border-radius:6px; border:1px solid var(--border);">
+            <div style="font-size:0.8rem; font-weight:700; margin-bottom:0.4rem;">${g.name}</div>
+            <div class="grid-2">
+                <input type="text" id="gb-${idx}" value="${g.buy}" placeholder="Alış">
+                <input type="text" id="gs-${idx}" value="${g.sell}" placeholder="Satış">
+            </div>
+        </div>
+    `).join("");
+}
+
+function toggleGoldEdit() {
+    const p = document.getElementById("gold-edit-panel");
+    p.style.display = p.style.display === "block" ? "none" : "block";
+}
+
+function saveGoldPrices() {
+    goldData = goldData.map((g, idx) => ({
+        name: g.name,
+        buy: document.getElementById(`gb-${idx}`).value || g.buy,
+        sell: document.getElementById(`gs-${idx}`).value || g.sell
+    }));
+    localStorage.setItem("nelazim_gold", JSON.stringify(goldData));
+    renderGold();
+    toggleGoldEdit();
+}
+
+function resetGoldPrices() {
+    localStorage.removeItem("nelazim_gold");
+    goldData = JSON.parse(JSON.stringify(defaultGold));
+    renderGold();
+}
+
+function init() {
+    renderGold();
+    filterSel(1);
+    filterSel(2);
+    document.getElementById("s1").value = "iPhone 16 Pro Max";
+    document.getElementById("s2").value = "Galaxy S25 Ultra";
+    runCompare();
+    runBudgetPhone();
+    runBudgetCar();
+}
+
+function openTab(id, btn) {
+    document.querySelectorAll(".tab-content").forEach(e => e.classList.remove("active"));
+    document.querySelectorAll(".nav-tab").forEach(e => e.classList.remove("active"));
+    document.getElementById("tab-" + id).classList.add("active");
+    btn.classList.add("active");
+}
+
+function filterSel(num) {
+    const q = document.getElementById("q" + num).value.toLowerCase();
+    const sel = document.getElementById("s" + num);
+    const prev = sel.value;
+    const list = phones.filter(p => (p.brand + " " + p.name).toLowerCase().includes(q));
+    document.getElementById("c" + num + "-count").textContent = list.length + " model";
+    sel.innerHTML = "";
+    list.forEach(p => sel.add(new Option(`${p.brand} ${p.name} (${p.price.toLocaleString()} TL)`, p.name)));
+    if (list.some(p => p.name === prev)) sel.value = prev;
+    runCompare();
+}
+
+function runCompare() {
+    const p1 = phones.find(p => p.name === document.getElementById("s1").value);
+    const p2 = phones.find(p => p.name === document.getElementById("s2").value);
+    if (!p1 || !p2) return;
+
+    document.getElementById("th1").textContent = `${p1.brand} ${p1.name}`;
+    document.getElementById("th2").textContent = `${p2.brand} ${p2.name}`;
+
+    let sc1 = 0, sc2 = 0;
+    const rows = [
+        ["Fiyat", `${p1.price.toLocaleString()} TL`, `${p2.price.toLocaleString()} TL`, p1.price < p2.price ? 1 : (p2.price < p1.price ? 2 : 0)],
+        ["İşlemci", p1.cpu, p2.cpu, p1.cpuScore > p2.cpuScore ? 1 : (p2.cpuScore > p1.cpuScore ? 2 : 0)],
+        ["RAM / Hafıza", `${p1.ram}GB / ${p1.storage}GB`, `${p2.ram}GB / ${p2.storage}GB`, p1.ram > p2.ram ? 1 : (p2.ram > p1.ram ? 2 : 0)],
+        ["Ekran Hızı", `${p1.hz} Hz`, `${p2.hz} Hz`, p1.hz > p2.hz ? 1 : (p2.hz > p1.hz ? 2 : 0)],
+        ["Batarya / Şarj", `${p1.battery}mAh (${p1.charge}W)`, `${p2.battery}mAh (${p2.charge}W)`, p1.battery > p2.battery ? 1 : (p2.battery > p1.battery ? 2 : 0)],
+        ["Kamera", p1.cam, p2.cam, p1.camScore > p2.camScore ? 1 : (p2.camScore > p1.camScore ? 2 : 0)]
+    ];
+
+    document.getElementById("cmp-body").innerHTML = rows.map(r => {
+        if (r[3] === 1) sc1++;
+        if (r[3] === 2) sc2++;
+        return `<tr>
+            <td class="spec">${r[0]}</td>
+            <td class="${r[3]===1?'winner':''}">${r[1]}</td>
+            <td class="${r[3]===2?'winner':''}">${r[2]}</td>
+        </tr>`;
+    }).join("");
+
+    const winText = sc1 > sc2 ? `${p1.brand} ${p1.name}` : (sc2 > sc1 ? `${p2.brand} ${p2.name}` : "Berabere");
+    document.getElementById("sum-box").innerHTML = `
+        <div>🏆 Karşılaştırma Galibi: <strong>${winText}</strong></div>
+        <div class="scores">
+            <div><small>${p1.name}</small><div class="score-val">${sc1}</div></div>
+            <div style="font-weight:800; color:var(--accent)">VS</div>
+            <div><small>${p2.name}</small><div class="score-val">${sc2}</div></div>
+        </div>
+    `;
+}
+
+function runBudgetPhone() {
+    const max = parseFloat(document.getElementById("bp-max").value) || 9999999;
+    const b = document.getElementById("bp-brand").value.toLowerCase();
+    const list = phones.filter(p => p.price <= max && (p.brand + " " + p.name).toLowerCase().includes(b))
+                       .sort((a, b) => b.price - a.price);
+    document.getElementById("bp-count").textContent = list.length + " sonuç";
+    document.getElementById("bp-list").innerHTML = list.length ? list.map(p => `
+        <div class="card">
+            <h4>${p.brand} ${p.name}</h4>
+            <p><strong>${p.price.toLocaleString()} TL</strong></p>
+            <p>${p.cpu} • ${p.ram}GB RAM • ${p.storage}GB</p>
+            <p>${p.battery} mAh (${p.charge}W) • ${p.cam}</p>
+        </div>
+    `).join("") : "<p>Bu kriterlere uygun telefon bulunamadı.</p>";
+}
+
+function runBudgetCar() {
+    const max = parseFloat(document.getElementById("bc-max").value) || 99999999;
+    const b = document.getElementById("bc-brand").value.toLowerCase();
+    const list = cars.filter(c => c.price <= max && (c.brand + " " + c.model + " " + c.body + " " + c.fuel).toLowerCase().includes(b))
+                     .sort((a, b) => b.price - a.price);
+    document.getElementById("bc-count").textContent = list.length + " sonuç";
+    document.getElementById("bc-list").innerHTML = list.length ? list.map(c => `
+        <div class="card">
+            <h4>${c.brand} ${c.model}</h4>
+            <p><strong>${c.price.toLocaleString()} TL</strong></p>
+            <p>${c.year} Model • ${c.fuel} • ${c.body}</p>
+        </div>
+    `).join("") : "<p>Bu kriterlere uygun araba bulunamadı.</p>";
+}
+
+function doDiscount() {
+    const p = parseFloat(document.getElementById("d-price").value) || 0;
+    const r = parseFloat(document.getElementById("d-rate").value) || 0;
+    const save = p * (r / 100);
+    document.getElementById("d-res").textContent = `İndirimli Fiyat: ${(p - save).toLocaleString()} TL (Kazanç: ${save.toLocaleString()} TL)`;
+}
+
+init();
+</script>
+</body>
+</html>
